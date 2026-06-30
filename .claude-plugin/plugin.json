@@ -1,0 +1,128 @@
+{
+  "name": "auditsentry",
+  "version": "1.0.0",
+  "description": "AuditSentry — AI-powered smart contract security auditor for Claude Code. Automated vulnerability detection, exploit PoCs, mainnet-fork simulation, and audit reports for Solidity & Vyper across all EVM chains.",
+  "author": {
+    "name": "Iktok Security Labs",
+    "url": "https://github.com/iktok90-design/ai-smart-contract-auditor"
+  },
+  "homepage": "https://github.com/iktok90-design/ai-smart-contract-auditor",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "audit",
+    "ai",
+    "smart-contract",
+    "solidity",
+    "vyper",
+    "defi",
+    "ethereum",
+    "evm",
+    "vulnerability",
+    "scanner",
+    "exploit",
+    "claude-code",
+    "mcp",
+    "web3"
+  ],
+  "mcpServers": {
+    "block-explorer": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/block-explorer-mcp/dist/index.js"],
+      "env": {
+        "ETHERSCAN_API_KEY": "${ETHERSCAN_API_KEY}",
+        "BERATRAIL_API_KEY": "${BERATRAIL_API_KEY}",
+        "ARBISCAN_API_KEY": "${ARBISCAN_API_KEY}",
+        "BASESCAN_API_KEY": "${BASESCAN_API_KEY}"
+      }
+    },
+    "forge-runner": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/forge-runner-mcp/dist/index.js"]
+    },
+    "hardhat-runner": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/hardhat-runner-mcp/dist/index.js"]
+    },
+    "anvil": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/anvil-mcp/dist/index.js"]
+    },
+    "tenderly": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/tenderly-mcp/dist/index.js"],
+      "env": {
+        "TENDERLY_ACCESS_KEY": "${TENDERLY_ACCESS_KEY}",
+        "TENDERLY_ACCOUNT": "${TENDERLY_ACCOUNT}",
+        "TENDERLY_PROJECT": "${TENDERLY_PROJECT}"
+      }
+    },
+    "c4-history": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/c4-history-mcp/dist/index.js"]
+    },
+    "sherlock-history": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/sherlock-history-mcp/dist/index.js"]
+    },
+    "gas-tracker": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/gas-tracker-mcp/dist/index.js"]
+    },
+    "token-metadata": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/token-metadata-mcp/dist/index.js"]
+    },
+    "slither-runner": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/slither-runner-mcp/dist/index.js"],
+      "env": {
+        "SLITHER_PATH": "${SLITHER_PATH}"
+      }
+    },
+    "mythril-runner": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/mythril-runner-mcp/dist/index.js"],
+      "env": {
+        "MYTHRIL_PATH": "${MYTHRIL_PATH}"
+      }
+    },
+    "fuzz-runner": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/fuzz-runner-mcp/dist/index.js"],
+      "env": {
+        "ECHIDNA_PATH": "${ECHIDNA_PATH}",
+        "MEDUSA_PATH": "${MEDUSA_PATH}",
+        "HALMOS_PATH": "${HALMOS_PATH}"
+      }
+    },
+    "monitoring": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/monitoring-mcp/dist/index.js"]
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-deploy-check.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-test-coverage.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

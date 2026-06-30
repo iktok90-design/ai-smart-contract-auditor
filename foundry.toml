@@ -1,0 +1,58 @@
+[profile.default]
+src = "examples"
+out = "out"
+libs = ["lib"]
+test = "test"
+solc = "0.8.24"
+optimizer = true
+optimizer_runs = 200
+via_ir = false
+verbosity = 2
+fuzz = { runs = 256 }
+invariant = { runs = 64, depth = 32 }
+
+[profile.nft]
+src = "nft/src"
+test = "nft/test"
+script = "nft/script"
+out = "out-nft"
+libs = ["lib"]
+solc = "0.8.24"
+
+# Vyper demo profile — requires `vyper` installed.
+# Run: FOUNDRY_PROFILE=vyper forge build
+# Vyper sources live in examples-vyper/ at repo root (kept OUTSIDE src=examples to avoid
+# default profile auto-detecting .vy files when Vyper isn't installed).
+[profile.vyper]
+src = "examples-vyper"
+out = "out-vyper"
+libs = ["lib"]
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = false
+quote_style = "double"
+number_underscore = "thousands"
+
+[rpc_endpoints]
+ethereum    = "${ETH_RPC_URL:-https://eth.llamarpc.com}"
+berachain   = "${BERA_RPC_URL:-https://rpc.berachain.com}"
+arbitrum    = "${ARB_RPC_URL:-https://arb1.arbitrum.io/rpc}"
+base        = "${BASE_RPC_URL:-https://mainnet.base.org}"
+optimism    = "${OP_RPC_URL:-https://mainnet.optimism.io}"
+polygon     = "${POLY_RPC_URL:-https://polygon-rpc.com}"
+bsc         = "${BSC_RPC_URL:-https://bsc-dataseed.binance.org}"
+linea       = "${LINEA_RPC_URL:-https://rpc.linea.build}"
+zksync      = "${ZKSYNC_RPC_URL:-https://mainnet.era.zksync.io}"
+scroll      = "${SCROLL_RPC_URL:-https://rpc.scroll.io}"
+
+[etherscan]
+ethereum  = { key = "${ETHERSCAN_API_KEY:-}" }
+arbitrum  = { key = "${ARBISCAN_API_KEY:-}" }
+base      = { key = "${BASESCAN_API_KEY:-}" }
+optimism  = { key = "${OP_API_KEY:-}" }
+polygon   = { key = "${POLYGONSCAN_API_KEY:-}" }
+bsc       = { key = "${BSCSCAN_API_KEY:-}" }
+linea     = { key = "${LINEASCAN_API_KEY:-}" }
+scroll    = { key = "${SCROLLSCAN_API_KEY:-}" }

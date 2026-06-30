@@ -1,0 +1,38 @@
+{
+  "name": "@auditsentry/scripts",
+  "version": "1.0.0",
+  "description": "AuditSentry tooling — report rendering, notifications, parsers, telemetry",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "test:only": "node --test test/*.test.mjs",
+    "render-card": "node dist/render-card.js",
+    "render-report": "node dist/render-report.js",
+    "md-to-html": "node dist/md-to-html.js",
+    "notify-slack": "node dist/notify-slack.js",
+    "notify-discord": "node dist/notify-discord.js",
+    "tweet": "node dist/tweet.js",
+    "parse-slither": "node dist/parse-slither.js",
+    "parse-mythril": "node dist/parse-mythril.js",
+    "diff-reports": "node dist/diff-reports.js",
+    "benchmark": "node dist/benchmark.js",
+    "validate-rule-pack": "node validate-rule-pack.mjs",
+    "sign-cert": "node dist/sign-cert.js",
+    "check-update": "node dist/check-update.js",
+    "report-crash": "node dist/report-crash.js",
+    "telemetry": "node dist/telemetry.js",
+    "test-mcp": "node dist/test-mcp.js",
+    "format-bounty": "node dist/format-bounty.js"
+  },
+  "dependencies": {
+    "@noble/curves": "^1.9.7",
+    "@noble/hashes": "^1.8.0",
+    "handlebars": "^4.7.8",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.log
+.env
+.env.local
+.rugproof.yml
+rugproof-reports/
+.DS_Store
+*.tsbuildinfo
+out/
+cache/
+broadcast/
+
+# Foundry deps cloned into lib/ — fetch via `forge install` or git submodule update --init
+lib/
