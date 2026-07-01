@@ -1,0 +1,19 @@
+{
+  "name": "@auditsentry/hardhat-runner-mcp",
+  "version": "0.1.0",
+  "description": "Hardhat runner MCP — compile, test, run scripts.",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^5.4.0"
+  }
+}

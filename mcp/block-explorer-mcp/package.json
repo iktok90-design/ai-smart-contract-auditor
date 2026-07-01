@@ -1,0 +1,20 @@
+{
+  "name": "@auditsentry/block-explorer-mcp",
+  "version": "0.1.0",
+  "description": "Unified block-explorer MCP server (Etherscan, Beratrail, Arbiscan, BaseScan, etc.)",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@auditsentry/mcp-shared": "*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^5.4.0"
+  }
+}

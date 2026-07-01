@@ -1,0 +1,21 @@
+{
+  "name": "@auditsentry/mcp-shared",
+  "version": "0.2.0",
+  "description": "Shared zero-dependency helpers for AuditSentry MCP servers (offline detection, stub envelope, fetch-with-retry).",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^5.4.0"
+  }
+}

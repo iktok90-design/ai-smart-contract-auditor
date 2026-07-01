@@ -1,0 +1,19 @@
+{
+  "name": "@auditsentry/gas-tracker-mcp",
+  "version": "0.1.0",
+  "description": "Real-time gas prices across EVM chains.",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@auditsentry/slither-runner-mcp",
+  "version": "0.2.0",
+  "description": "Run Slither if installed, else return a labeled sample — pipe through parse-slither.",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@auditsentry/mcp-shared": "*",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^5.4.0"
+  }
+}
