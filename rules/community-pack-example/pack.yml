@@ -1,0 +1,9 @@
+name: example-rule-pack
+version: 0.1.0
+author: AuditSentry (example pack — replace with your details)
+license: MIT
+description: Example community rule pack — copy this structure to start your own.
+target: solidity
+requires_auditsentry: ">=0.1.0"
+rules:
+  - example-fork-detection

@@ -1,0 +1,11 @@
+name: solady-gotchas
+version: 1.0.0
+author: AuditSentry
+license: MIT
+description: Solady-specific footguns — SafeTransferLib's missing contract check, gas-optimized non-standard ERC20/permit behavior, and the guarded Ownable initializer front-run in clone deployments.
+target: solidity
+requires_auditsentry: ">=0.2.0"
+rules:
+  - solady-safetransferlib-no-contract-check
+  - solady-erc20-permit2-assumptions
+  - solady-ownable-init-frontrun
