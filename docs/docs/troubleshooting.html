@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="/RugProof/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Troubleshooting — Rugproof</title>
+<meta name="theme-color" content="#0a0904">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="bg-honeycomb"></div>
+<div class="bg-grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="logo-mark"></span>RUGPROOF</a>
+    <div class="nav-links">
+      <a href="index.html#features">features</a>
+      <a href="docs/">docs</a>
+      <a href="docs/configuration.html">configuration</a>
+      <a href="docs/mcp-reference.html">mcp</a>
+      <a class="cta" href="https://github.com/omermaksutii/RugProof">github →</a>
+    </div>
+  </div>
+</nav>
+
+<main class="doc">
+  <div class="eyebrow" style="margin-bottom: 16px;">/docs/troubleshooting</div>
+  <h1>Troubleshooting <span style="font-style:italic;color:var(--honey)">&amp; FAQ.</span></h1>
+  <p>Rugproof is designed to work out-of-the-box with zero configuration. When something looks off, it's usually one of these.</p>
+
+  <h2>“It returned mock / stub data”</h2>
+  <p>Any MCP result tagged <code>"stub": true</code> (or <code>__stub</code> / <code>__reason</code>) means a live integration wasn't available and a labeled sample was used instead. Causes &amp; fixes:</p>
+  <table>
+    <thead><tr><th>You see</th><th>Why</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>block-explorer mock</td><td>no <code>ETHERSCAN_API_KEY</code></td><td>Export an Etherscan API key (one key covers all Etherscan v2 chains).</td></tr>
+      <tr><td>slither-runner sample</td><td>Slither not on PATH</td><td><code>pip install slither-analyzer</code>, or set <code>SLITHER_PATH</code>.</td></tr>
+      <tr><td>mythril-runner sample</td><td>Mythril not on PATH</td><td><code>pip install mythril</code>, or set <code>MYTHRIL_PATH</code>.</td></tr>
+      <tr><td>forge-runner mock gas/coverage</td><td>Foundry not installed or build failed</td><td>Install Foundry; ensure <code>forge build</code> passes first.</td></tr>
+      <tr><td>tenderly stub</td><td>no <code>TENDERLY_*</code> creds</td><td>Set <code>TENDERLY_ACCESS_KEY</code>/<code>ACCOUNT</code>/<code>PROJECT</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>This is intentional — the plugin never hard-fails on a missing key or tool. To force stubs everywhere (CI, air-gapped), set <code>RUGPROOF_OFFLINE=1</code>.</p>
+
+  <h2>“<code>/audit</code> found nothing”</h2>
+  <ul>
+    <li>Check your <code>include</code>/<code>exclude</code> globs — the target may be excluded (e.g. files matching <code>**/*.t.sol</code> or <code>lib/**</code> are skipped by default).</li>
+    <li>A clean contract legitimately returns zero findings — Rugproof won't manufacture issues to look thorough.</li>
+    <li>Lower the bar with <code>/audit-deep</code> or <code>/audit-strict</code> for a multi-pass review.</li>
+  </ul>
+
+  <h2>“The Hardhat MCP hangs / times out”</h2>
+  <p>Fixed in v0.2.0: the runner uses <code>npx --no-install</code> with closed stdin and a timeout, so it fails fast outside a Hardhat project instead of waiting on an install prompt. Tune the cap with <code>RUGPROOF_HH_TIMEOUT_MS</code>.</p>
+
+  <h2>“An anvil fork didn't come up”</h2>
+  <p>The anvil MCP now polls the RPC for readiness and errors clearly if it can't reach <code>eth_blockNumber</code> within 20s. Check that <code>anvil</code> is on PATH and the upstream fork RPC is reachable.</p>
+
+  <h2>“MCP server not connecting”</h2>
+  <ul>
+    <li>Build the servers: <code>cd mcp &amp;&amp; npm install &amp;&amp; npm run build</code>.</li>
+    <li>Smoke-test all of them: <code>node scripts/dist/test-mcp.js</code> (expect 11/11).</li>
+    <li><code>plugin.json</code> points each server at <code>mcp/&lt;name&gt;-mcp/dist/index.js</code> — make sure <code>dist/</code> exists.</li>
+  </ul>
+
+  <h2>Rate limits</h2>
+  <p>The history servers (c4/sherlock) and explorer calls retry with exponential backoff and honour <code>Retry-After</code>. Set <code>GITHUB_TOKEN</code> to raise the GitHub search rate limit.</p>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <a href="docs/" style="color: var(--text-mid); text-decoration: none;">← docs index</a>
+      <span>v0.3.0</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/animations.js"></script>
+</body>
+</html>

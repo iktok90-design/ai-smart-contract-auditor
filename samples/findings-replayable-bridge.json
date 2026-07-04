@@ -1,0 +1,10 @@
+{
+  "target": "ReplayableBridge",
+  "address": "",
+  "chain": "local",
+  "date": "2026-05-13",
+  "grade": "F",
+  "counts": { "critical": 2, "high": 2, "medium": 0, "low": 0, "info": 0 },
+  "top_finding": "Cross-chain replay: no nonce, no chainId, no verifyingContract",
+  "report_url": "https://iktok90-design.github.io/AuditSentry/docs/sample-replayable-bridge"
+}

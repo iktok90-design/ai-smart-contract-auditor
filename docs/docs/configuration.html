@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="/RugProof/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configuration — Rugproof</title>
+<meta name="theme-color" content="#0a0904">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="bg-honeycomb"></div>
+<div class="bg-grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="logo-mark"></span>RUGPROOF</a>
+    <div class="nav-links">
+      <a href="index.html#features">features</a>
+      <a href="docs/">docs</a>
+      <a href="docs/commands.html">commands</a>
+      <a href="docs/troubleshooting.html">troubleshooting</a>
+      <a class="cta" href="https://github.com/omermaksutii/RugProof">github →</a>
+    </div>
+  </div>
+</nav>
+
+<main class="doc">
+  <div class="eyebrow" style="margin-bottom: 16px;">/docs/configuration</div>
+  <h1>Configuration <span style="font-style:italic;color:var(--honey)">guide.</span></h1>
+  <p>Rugproof reads <code>.rugproof.yml</code> at your repo root. Everything is optional — with no config, Rugproof audits <code>src/**/*.sol</code> and <code>contracts/**/*.sol</code> and blocks CI on <strong>high</strong>+ findings. Start by copying <code>.rugproof.yml.example</code>.</p>
+
+  <h2>Key settings</h2>
+  <table>
+    <thead><tr><th>Key</th><th>Default</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>severity_threshold</code></td><td><code>high</code></td><td>CI/hook gate: findings at this severity or worse exit non-zero.</td></tr>
+      <tr><td><code>profile</code></td><td><code>standard</code></td><td><code>strict</code> | <code>standard</code> | <code>lenient</code> rule weighting.</td></tr>
+      <tr><td><code>chains</code></td><td>10 EVM chains</td><td>Targets for <code>/audit-live</code>, <code>/simulate</code>, <code>/verify-deploy</code>.</td></tr>
+      <tr><td><code>include</code> / <code>exclude</code></td><td><code>src</code>,<code>contracts</code> / <code>test</code>,<code>lib</code></td><td>Globs that scope every audit.</td></tr>
+      <tr><td><code>ignore</code></td><td>—</td><td>Per-finding suppressions (<code>id</code> + <code>path</code> + a documented <code>reason</code>).</td></tr>
+      <tr><td><code>auto_specialists</code></td><td><code>true</code></td><td>Auto-dispatch protocol specialists from <code>/audit</code>.</td></tr>
+      <tr><td><code>cache</code></td><td>enabled, 30d</td><td>Skip unchanged files on re-audit (see <code>caching-and-incremental</code>).</td></tr>
+      <tr><td><code>privacy_mode</code></td><td><code>false</code></td><td>Never send any data off-machine; cache in tmpfs only.</td></tr>
+      <tr><td><code>offline</code></td><td><code>false</code></td><td>No external API calls. Equivalent to <code>RUGPROOF_OFFLINE=1</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Recipes</h2>
+
+  <h3>Block CI only on Critical</h3>
+  <pre class="tree">severity_threshold: critical
+hooks:
+  pre_push: { enabled: true, fail_on: critical }</pre>
+
+  <h3>Monorepo: audit one package, cache aggressively</h3>
+  <pre class="tree">include: ["packages/core/src/**/*.sol"]
+exclude: ["**/test/**", "**/mocks/**"]
+cache: { enabled: true, ttl_days: 30 }</pre>
+
+  <h3>Fully offline / air-gapped</h3>
+  <pre class="tree">offline: true
+telemetry: { enabled: false, crash_reports: false }
+update_check: { enabled: false }</pre>
+  <p>Or set the env var <code>RUGPROOF_OFFLINE=1</code> for a single run — every MCP server falls back to labeled stub data and no network call is made.</p>
+
+  <h3>Inline suppression (in code)</h3>
+  <pre class="tree">// rugproof-ignore: REENT-001 — single trusted caller, reviewed 2025-Q4
+function trustedOp() external onlyOwner { ... }</pre>
+
+  <h2>API keys</h2>
+  <p>Live integrations read keys from the environment, never from <code>.rugproof.yml</code>: <code>ETHERSCAN_API_KEY</code> (one key, all Etherscan v2 chains), <code>BERATRAIL_API_KEY</code>, <code>TENDERLY_ACCESS_KEY</code>/<code>TENDERLY_ACCOUNT</code>/<code>TENDERLY_PROJECT</code>, <code>GITHUB_TOKEN</code> (raises the history rate limit). All are optional — absent keys degrade to mock data.</p>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <a href="docs/" style="color: var(--text-mid); text-decoration: none;">← docs index</a>
+      <span>v0.3.0</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/animations.js"></script>
+</body>
+</html>

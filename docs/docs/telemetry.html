@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="/RugProof/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Telemetry &amp; privacy — Rugproof</title>
+<meta name="theme-color" content="#0a0904">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="bg-honeycomb"></div>
+<div class="bg-grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="logo-mark"></span>RUGPROOF</a>
+    <div class="nav-links">
+      <a href="index.html#features">features</a>
+      <a href="docs/">docs</a>
+      <a href="docs/configuration.html">configuration</a>
+      <a class="cta" href="https://github.com/omermaksutii/RugProof">github →</a>
+    </div>
+  </div>
+</nav>
+
+<main class="doc">
+  <div class="eyebrow" style="margin-bottom: 16px;">/docs/telemetry</div>
+  <h1>Telemetry <span style="font-style:italic;color:var(--honey)">&amp; privacy.</span></h1>
+  <p><strong>Everything is off by default.</strong> Rugproof sends nothing off your machine unless you explicitly opt in. Your contract source, file paths, and findings are <em>never</em> transmitted.</p>
+
+  <h2>What can be enabled</h2>
+  <table>
+    <thead><tr><th>Flag</th><th>Default</th><th>If enabled, sends</th></tr></thead>
+    <tbody>
+      <tr><td><code>telemetry.enabled</code></td><td><strong>false</strong></td><td>plugin version + command name + success/fail outcome. Nothing else.</td></tr>
+      <tr><td><code>telemetry.crash_reports</code></td><td><strong>false</strong></td><td>anonymized stack traces (no source, no paths).</td></tr>
+      <tr><td><code>telemetry.endpoint</code></td><td><em>blank</em></td><td>nothing — a blank endpoint disables network send entirely.</td></tr>
+      <tr><td><code>update_check.enabled</code></td><td>true</td><td>a single request to the GitHub releases API to compare versions.</td></tr>
+    </tbody>
+  </table>
+  <p>The exact payload shape lives in <a href="https://github.com/omermaksutii/RugProof/blob/main/scripts/src/telemetry.ts"><code>scripts/src/telemetry.ts</code></a> — read it; it is intentionally tiny.</p>
+
+  <h2>Hard privacy switches</h2>
+  <pre class="tree">privacy_mode: true   # never send anything; cache in tmpfs only
+offline: true        # no external API calls at all (also: RUGPROOF_OFFLINE=1)</pre>
+  <p>With <code>offline: true</code> (or <code>RUGPROOF_OFFLINE=1</code>) every network path — telemetry, update check, block explorers, GitHub history — is disabled. Local analysis, local forks (anvil), and the LLM still work.</p>
+
+  <h2>Opting out of update notifications</h2>
+  <pre class="tree">update_check:
+  enabled: false
+  notify_on_run: false</pre>
+
+  <h2>Principles</h2>
+  <ul>
+    <li>Opt-in, never opt-out.</li>
+    <li>No source code, file paths, addresses, or findings ever leave your machine.</li>
+    <li>A blank endpoint means no send, even if a flag is on.</li>
+    <li>The full payload is open-source and inspectable.</li>
+  </ul>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <a href="docs/" style="color: var(--text-mid); text-decoration: none;">← docs index</a>
+      <span>v0.3.0</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/animations.js"></script>
+</body>
+</html>

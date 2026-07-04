@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rugproof Audit — examples/VulnerableVault.sol</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1f262d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --border: #30363d;
+    --critical: #ff4747;
+    --high: #ff8c42;
+    --medium: #ffc94a;
+    --low: #4ac3ff;
+    --info: #8b949e;
+    --accent: #f8a849;       /* Berachain honey */
+    --accent-2: #c4843a;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+    --serif: ui-serif, Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 4rem 2rem; }
+  h1 { font-size: 2.5rem; font-weight: 800; margin: 0 0 .25rem; }
+  h1 .target { color: var(--accent); }
+  .meta {
+    color: var(--text-dim); font-family: var(--mono); font-size: .9rem;
+    margin-bottom: 3rem;
+  }
+  h2 {
+    font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1rem;
+    padding-bottom: .5rem; border-bottom: 1px solid var(--border);
+  }
+  .summary {
+    background: var(--surface); padding: 1.5rem;
+    border-radius: 12px; border: 1px solid var(--border);
+    font-size: 1.05rem;
+  }
+  .grade-card {
+    display: grid; grid-template-columns: auto 1fr; gap: 2rem;
+    align-items: center; margin: 2rem 0;
+    background: var(--surface); padding: 2rem;
+    border-radius: 12px; border: 1px solid var(--border);
+  }
+  .grade-letter {
+    font-size: 6rem; font-weight: 900; line-height: 1;
+    color: var(--accent); font-family: var(--serif);
+  }
+  .severity-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: .75rem;
+  }
+  .sev-cell {
+    text-align: center; padding: 1rem; border-radius: 8px;
+    background: var(--surface-2);
+  }
+  .sev-cell .count { font-size: 1.75rem; font-weight: 800; }
+  .sev-cell .label { font-size: .75rem; text-transform: uppercase; color: var(--text-dim); }
+  .sev-critical .count { color: var(--critical); }
+  .sev-high .count { color: var(--high); }
+  .sev-medium .count { color: var(--medium); }
+  .sev-low .count { color: var(--low); }
+  .sev-info .count { color: var(--info); }
+  .finding {
+    background: var(--surface); padding: 1.5rem;
+    border-radius: 12px; border: 1px solid var(--border);
+    border-left: 4px solid var(--info);
+    margin-bottom: 1rem;
+  }
+  .finding.sev-critical { border-left-color: var(--critical); }
+  .finding.sev-high { border-left-color: var(--high); }
+  .finding.sev-medium { border-left-color: var(--medium); }
+  .finding.sev-low { border-left-color: var(--low); }
+  .finding-header {
+    display: flex; align-items: center; gap: .75rem;
+    cursor: pointer; user-select: none;
+  }
+  .finding-id {
+    font-family: var(--mono); font-size: .85rem;
+    background: var(--surface-2); padding: .25rem .5rem;
+    border-radius: 4px; color: var(--text-dim);
+  }
+  .finding-sev {
+    font-family: var(--mono); font-size: .75rem;
+    text-transform: uppercase; padding: .15rem .5rem;
+    border-radius: 4px; font-weight: 700;
+  }
+  .finding-sev.sev-critical { background: var(--critical); color: white; }
+  .finding-sev.sev-high { background: var(--high); color: white; }
+  .finding-sev.sev-medium { background: var(--medium); color: black; }
+  .finding-sev.sev-low { background: var(--low); color: black; }
+  .finding-title { flex: 1; font-weight: 600; }
+  .finding-body { padding-top: 1rem; display: none; }
+  .finding.open .finding-body { display: block; }
+  .finding-body h4 { margin: 1rem 0 .25rem; font-size: .9rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
+  pre, code {
+    font-family: var(--mono);
+    background: var(--surface-2); padding: .15rem .35rem; border-radius: 4px;
+    font-size: .9rem;
+  }
+  pre {
+    padding: 1rem; overflow-x: auto;
+    border: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  .footer {
+    margin-top: 4rem; padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim); font-size: .85rem; text-align: center;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Rugproof Audit — <span class="target">examples/VulnerableVault.sol</span></h1>
+  <div class="meta">2026-05-13 · commit <code>HEAD</code> · local</div>
+
+  <h2>Summary</h2>
+  <div class="summary">VulnerableVault is a 56-line ETH custody contract with a classic fund-draining reentrancy in withdraw() exploitable in a single tx, two privileged functions lacking access control, an unchecked external call, and an EOA admin with sweep authority. Not safe to deploy.</div>
+
+  <div class="grade-card">
+    <div class="grade-letter">F</div>
+    <div class="severity-grid">
+      <div class="sev-cell sev-critical"><div class="count">1</div><div class="label">Critical</div></div>
+      <div class="sev-cell sev-high"><div class="count">3</div><div class="label">High</div></div>
+      <div class="sev-cell sev-medium"><div class="count">1</div><div class="label">Medium</div></div>
+      <div class="sev-cell sev-low"><div class="count">1</div><div class="label">Low</div></div>
+      <div class="sev-cell sev-info"><div class="count">0</div><div class="label">Info</div></div>
+    </div>
+  </div>
+
+  <h2>Trust report</h2>
+  <ul>
+    <li><strong>transferOwnership</strong> — Immediate owner rotation with no two-step (Authority: single EOA; Timelock: none)</li>
+    <li><strong>rescue</strong> — Owner can transfer entire contract balance anywhere (Authority: single EOA; Timelock: none)</li>
+    <li><strong>setPaused</strong> — Pause flag with no access control (Authority: anonymous; Timelock: none)</li>
+  </ul>
+
+  <h2>Findings</h2>
+  <div class="finding sev-critical" onclick="this.classList.toggle('open')">
+    <div class="finding-header">
+      <span class="finding-id">REENT-001</span>
+      <span class="finding-sev sev-critical">Critical</span>
+      <span class="finding-title">Reentrancy drains vault via CEI violation</span>
+    </div>
+    <div class="finding-body">
+      <h4>Location</h4>
+      <code>examples/VulnerableVault.sol:24</code>
+      <h4>Summary</h4>
+      <p>withdraw() sends ether before zeroing balance; attacker re-enters via receive() to drain the vault.</p>
+      <h4>Code</h4>
+      <pre><code>function withdraw() external {
+    uint256 amt &#x3D; balance[msg.sender];
+    (bool ok,) &#x3D; msg.sender.call{value: amt}(&quot;&quot;);
+    require(ok);
+    balance[msg.sender] &#x3D; 0;
+}</code></pre>
+      <h4>Impact</h4>
+      <p>Loss of 100% of user deposits in one tx. PoC demonstrates 1 ETH attacker → 11 ETH withdrawn.</p>
+      <h4>Recommendation</h4>
+      <p>Move state update before the external call (CEI). Or add nonReentrant.</p>
+      <h4>Suggested patch</h4>
+      <pre><code>-    (bool ok,) &#x3D; msg.sender.call{value: amt}(&quot;&quot;);
+-    require(ok);
+-    balance[msg.sender] &#x3D; 0;
++    balance[msg.sender] &#x3D; 0;
++    (bool ok,) &#x3D; msg.sender.call{value: amt}(&quot;&quot;);
++    require(ok);</code></pre>
+    </div>
+  </div>
+  <div class="finding sev-high" onclick="this.classList.toggle('open')">
+    <div class="finding-header">
+      <span class="finding-id">ACCESS-001</span>
+      <span class="finding-sev sev-high">High</span>
+      <span class="finding-title">setPaused has no access control</span>
+    </div>
+    <div class="finding-body">
+      <h4>Location</h4>
+      <code>examples/VulnerableVault.sol:34</code>
+      <h4>Summary</h4>
+      <p>Anyone can call setPaused(bool) — pause state controllable by adversary.</p>
+      <h4>Code</h4>
+      <pre><code>function setPaused(bool p) external { paused &#x3D; p; }</code></pre>
+      <h4>Impact</h4>
+      <p>State pollution today; full DoS if any future function gains whenNotPaused gating.</p>
+      <h4>Recommendation</h4>
+      <p>Add onlyOwner modifier.</p>
+    </div>
+  </div>
+  <div class="finding sev-high" onclick="this.classList.toggle('open')">
+    <div class="finding-header">
+      <span class="finding-id">ACCESS-002</span>
+      <span class="finding-sev sev-high">High</span>
+      <span class="finding-title">rescue can drain user deposits</span>
+    </div>
+    <div class="finding-body">
+      <h4>Location</h4>
+      <code>examples/VulnerableVault.sol:40</code>
+      <h4>Summary</h4>
+      <p>Owner can transfer entire contract balance (&#x3D; user deposits) anywhere with no allowlist or timelock.</p>
+      <h4>Code</h4>
+      <pre><code>function rescue(address payable to) external onlyOwner { to.transfer(address(this).balance); }</code></pre>
+      <h4>Impact</h4>
+      <p>Single-key compromise &#x3D; 100% user fund loss.</p>
+      <h4>Recommendation</h4>
+      <p>Remove or scope to non-deposit assets; add Timelock + multi-sig.</p>
+    </div>
+  </div>
+  <div class="finding sev-high" onclick="this.classList.toggle('open')">
+    <div class="finding-header">
+      <span class="finding-id">UNCHK-001</span>
+      <span class="finding-sev sev-high">High</span>
+      <span class="finding-title">Low-level call return value ignored</span>
+    </div>
+    <div class="finding-body">
+      <h4>Location</h4>
+      <code>examples/VulnerableVault.sol:46</code>
+      <h4>Summary</h4>
+      <p>depositor.call(data) silently swallows failure.</p>
+      <h4>Code</h4>
+      <pre><code>depositor.call(data);</code></pre>
+      <h4>Impact</h4>
+      <p>Silent notification failures; gas-grief surface.</p>
+      <h4>Recommendation</h4>
+      <p>Capture return value; require(ok).</p>
+    </div>
+  </div>
+  <div class="finding sev-medium" onclick="this.classList.toggle('open')">
+    <div class="finding-header">
+      <span class="finding-id">CENT-001</span>
+      <span class="finding-sev sev-medium">Medium</span>
+      <span class="finding-title">Single-EOA owner with no two-step transfer</span>
+    </div>
+    <div class="finding-body">
+      <h4>Location</h4>
+      <code>examples/VulnerableVault.sol:50</code>
+      <h4>Summary</h4>
+      <p>transferOwnership applies immediately; typo can permanently brick contract.</p>
+      <h4>Code</h4>
+      <pre><code>function transferOwnership(address newOwner) external onlyOwner { owner &#x3D; newOwner; }</code></pre>
+      <h4>Impact</h4>
+      <p>Operational risk on owner rotation.</p>
+      <h4>Recommendation</h4>
+      <p>Use Ownable2Step.</p>
+    </div>
+  </div>
+  <div class="finding sev-low" onclick="this.classList.toggle('open')">
+    <div class="finding-header">
+      <span class="finding-id">PRAGMA-001</span>
+      <span class="finding-sev sev-low">Low</span>
+      <span class="finding-title">Floating pragma ^0.8.20</span>
+    </div>
+    <div class="finding-body">
+      <h4>Location</h4>
+      <code>examples/VulnerableVault.sol:2</code>
+      <h4>Summary</h4>
+      <p>Pin compiler version to match audited bytecode.</p>
+      <h4>Code</h4>
+      <pre><code>pragma solidity ^0.8.20;</code></pre>
+      <h4>Impact</h4>
+      <p>Future minor compiler updates can change codegen.</p>
+      <h4>Recommendation</h4>
+      <p>pragma solidity 0.8.24;</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    Generated by <a href="https://omermaksutii.github.io/RugProof">Rugproof</a> — Rugproof your code before someone else does.
+  </div>
+</div>
+</body>
+</html>

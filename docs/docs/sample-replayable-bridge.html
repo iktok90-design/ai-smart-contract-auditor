@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="/RugProof/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rugproof Security Audit — ReplayableBridge.sol — Rugproof</title>
+<meta name="theme-color" content="#0a0904">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="bg-honeycomb"></div>
+<div class="bg-grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="logo-mark"></span>RUGPROOF</a>
+    <div class="nav-links">
+      <a href="index.html#features">features</a>
+      <a href="index.html#stack">stack</a>
+      <a href="index.html#install">install</a>
+      <a href="gallery/">gallery</a>
+      <a href="docs/" style="color: var(--honey);">docs</a>
+      <a class="cta" href="https://github.com/omermaksutii/RugProof">github →</a>
+    </div>
+  </div>
+</nav>
+
+<main class="doc">
+<h1>Rugproof Security Audit — ReplayableBridge.sol</h1>
+
+<blockquote>2026-05-13 · grade <strong>F</strong> · 2 Critical, 2 High</blockquote>
+
+<h2>Summary</h2>
+
+<p>Signature-verified bridge contract with no nonce, no chainId, no <code>verifyingContract</code> binding, no zero-address check on <code>ecrecover</code>, and no signature-malleability guard. A single signed payload is replayable indefinitely on any chain where this contract is deployed and against any deployment of this contract. <strong>Total loss of bridged liquidity is trivial.</strong></p>
+
+<h2>Findings</h2>
+
+<table>
+<thead><tr><th>ID</th><th>Sev</th><th>Title</th></tr></thead>
+<tbody>
+<tr><td>REPLAY-001</td><td>Critical</td><td>No nonce — every signed withdrawal is replayable forever</td></tr>
+<tr><td>REPLAY-002</td><td>Critical</td><td>No chainId / verifyingContract — sig replays cross-chain and cross-deployment</td></tr>
+<tr><td>REPLAY-003</td><td>High</td><td><code>ecrecover</code> zero-address bypass possible</td></tr>
+<tr><td>REPLAY-004</td><td>High</td><td>Signature malleability (no s-bound check)</td></tr>
+</tbody></table>
+
+<h3>REPLAY-001 — Missing nonce (Critical)</h3>
+<pre><code class="lang-solidity">
+bytes32 hash = keccak256(abi.encode(recipient, amount));
+</code></pre>
+<p>The hash includes only <code>(recipient, amount)</code>. Once an attacker has any valid signature, they can replay it until liquidity is exhausted. This is the entire bridge value at risk.</p>
+
+<h3>REPLAY-002 — No chainId / verifyingContract (Critical)</h3>
+<p>The same payload is valid on every EVM chain where this contract is deployed — and on every redeployment. A signature legitimately authorizing a 1 ETH withdrawal on Ethereum can withdraw 1 ETH from the Berachain deployment, then Arbitrum, then Base.</p>
+
+<p>EIP-712 domain separator MUST include both <code>chainId</code> and <code>verifyingContract</code>.</p>
+
+<h3>REPLAY-003 — ecrecover zero-address bypass (High)</h3>
+<pre><code class="lang-solidity">
+address signer = ecrecover(hash, v, r, s);
+require(signer == relayer, &quot;bad sig&quot;);
+</code></pre>
+<p><code>ecrecover</code> returns <code>address(0)</code> on invalid input (rather than reverting). If <code>relayer</code> is ever set to <code>address(0)</code> — possible during initialization, after a botched rotation, etc. — every malformed signature passes. Add <code>require(signer != address(0))</code> or use OZ <code>ECDSA.recover</code> which guards this.</p>
+
+<h3>REPLAY-004 — Signature malleability (High)</h3>
+<pre><code class="lang-solidity">
+function approveSpend(...) external {
+    bytes32 hash = keccak256(abi.encode(spender, amount));
+    address signer = ecrecover(hash, v, r, s);   // accepts both s and n-s
+}
+</code></pre>
+<p>Even if you add a per-sig "seen" map (which this contract doesn't), an attacker can produce a <em>different-looking</em> but cryptographically valid signature by flipping <code>s</code> to <code>n - s</code>. Replay protection that keys on signature bytes is bypassed. Use OZ <code>ECDSA.tryRecover</code> which enforces <code>s &lt;= n/2</code>.</p>
+
+<h2>Recommendation</h2>
+
+<pre><code class="lang-solidity">
+contract Bridge is EIP712 {
+    constructor() EIP712(&quot;Rugproof Bridge&quot;, &quot;1&quot;) {}
+
+    mapping(bytes32 =&gt; bool) public used;
+
+    function withdraw(
+        address recipient,
+        uint256 amount,
+        uint256 deadline,
+        uint256 nonce,
+        bytes calldata sig
+    ) external {
+        require(block.timestamp &lt;= deadline, &quot;expired&quot;);
+        bytes32 structHash = keccak256(abi.encode(
+            keccak256(&quot;Withdraw(address recipient,uint256 amount,uint256 deadline,uint256 nonce)&quot;),
+            recipient, amount, deadline, nonce
+        ));
+        bytes32 digest = _hashTypedDataV4(structHash);  // ← injects chainId + verifyingContract
+
+        require(!used[digest], &quot;replayed&quot;);
+        used[digest] = true;
+
+        address signer = ECDSA.recover(digest, sig);    // ← handles malleability + zero-addr
+        require(signer == relayer, &quot;bad sig&quot;);
+
+        token.safeTransfer(recipient, amount);
+    }
+}
+</code></pre>
+
+<p>Skill detail: <a href="../skills/signature-replay/SKILL.md">signature-replay</a>, <a href="../agents/bridge-specialist.md">bridge-specialist</a>, <a href="../agents/crosschain-messaging-specialist.md">crosschain-messaging-specialist</a>.</p>
+
+<blockquote>Generated by Rugproof — https://omermaksutii.github.io/RugProof</blockquote>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <a href="docs/" style="color: var(--text-mid); text-decoration: none;">← all docs</a>
+      <span>v0.1.0</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/animations.js"></script>
+</body>
+</html>

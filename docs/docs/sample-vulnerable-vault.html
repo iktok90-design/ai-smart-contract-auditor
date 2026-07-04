@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="/RugProof/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rugproof Security Audit — VulnerableVault.sol — Rugproof</title>
+<meta name="theme-color" content="#0a0904">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="bg-honeycomb"></div>
+<div class="bg-grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="logo-mark"></span>RUGPROOF</a>
+    <div class="nav-links">
+      <a href="index.html#features">features</a>
+      <a href="index.html#stack">stack</a>
+      <a href="index.html#install">install</a>
+      <a href="gallery/">gallery</a>
+      <a href="docs/" style="color: var(--honey);">docs</a>
+      <a class="cta" href="https://github.com/omermaksutii/RugProof">github →</a>
+    </div>
+  </div>
+</nav>
+
+<main class="doc">
+
+<h1>Rugproof Security Audit — VulnerableVault.sol</h1>
+
+<blockquote>Generated 2026-05-13 · commit <code>HEAD</code> · chain: local</blockquote>
+
+<h2>Executive summary</h2>
+
+<p>VulnerableVault is a 56-line ETH custody contract with a classic, fund-draining reentrancy in <code>withdraw()</code> that an attacker can exploit in a single transaction to drain the entire vault balance. Two privileged functions lack access control entirely — anyone can pause the contract or wipe its balance. The contract additionally ignores a low-level call return value and uses an EOA single-key admin model with sweep authority over user deposits. <strong>This contract is not safe to deploy under any circumstance.</strong></p>
+
+<table>
+<thead><tr><th>Metric</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Critical</td><td><strong>1</strong></td></tr>
+<tr><td>High</td><td><strong>3</strong></td></tr>
+<tr><td>Medium</td><td>1</td></tr>
+<tr><td>Low</td><td>1</td></tr>
+<tr><td>Info</td><td>0</td></tr>
+<tr><td><strong>Grade</strong></td><td><strong>F</strong></td></tr>
+</tbody></table>
+
+<h2>Scope</h2>
+
+<ul>
+<li>File: <code>examples/VulnerableVault.sol</code></li>
+<li>Lines of code: 56</li>
+<li>Solidity: <code>^0.8.20</code></li>
+<li>Compiler: <code>solc 0.8.24</code></li>
+</ul>
+
+<h2>Methodology</h2>
+
+<ul>
+<li>19 vulnerability skills auto-loaded; 5 matched.</li>
+<li>Specialist subagents dispatched in parallel: <code>attacker</code>, <code>defender</code>.</li>
+<li>Tools: Rugproof v0.1.0, Foundry 1.5.1.</li>
+<li>Strict consensus mode: off.</li>
+</ul>
+
+<h2>Trust report</h2>
+
+<p>The following privileged functions exist. Each represents a trust assumption.</p>
+
+<ul>
+<li><strong><code>transferOwnership(address)</code></strong> — owner can rotate ownership immediately, no two-step, no zero-address check.</li>
+<li>Authority: single EOA (<code>owner</code>)</li>
+<li>Timelock: none</li>
+<li>Risk if compromised: full contract takeover</li>
+<li><strong><code>rescue(address payable)</code></strong> — owner can transfer the entire contract balance to any address.</li>
+<li>Authority: single EOA (<code>owner</code>)</li>
+<li>Timelock: none</li>
+<li>Risk if compromised: 100% user funds drained</li>
+<li><strong><code>setPaused(bool)</code></strong> — <em>unrestricted</em>. ANYONE can call.</li>
+<li>Authority: anonymous</li>
+<li>Timelock: none</li>
+<li>Risk: griefing — adversary can flip pause state at will</li>
+</ul>
+
+<h2>Findings</h2>
+
+<h3>[REENT-001 | Critical] Reentrancy drains vault via CEI violation</h3>
+
+<p><strong>Confidence:</strong> High</p>
+<p><strong>Pattern:</strong> reentrancy (classic)</p>
+<p><strong>Location:</strong> <code>examples/VulnerableVault.sol:24</code></p>
+
+<p><strong>Summary</strong></p>
+
+<p><code>withdraw()</code> sends ether via low-level <code>call</code> <em>before</em> zeroing the user's balance. An attacker contract whose <code>receive()</code> re-enters <code>withdraw()</code> reads the un-zeroed balance, withdraws again, and repeats until the vault is empty. The bundled exploit in <code>test/exploits/ExploitREENT001.t.sol</code> deposits 1 ETH and walks away with 11 ETH (its deposit + the victim's 10 ETH).</p>
+
+<p><strong>Code</strong></p>
+
+<pre><code class="lang-solidity">
+function withdraw() external {
+    uint256 amt = balance[msg.sender];
+    require(amt &gt; 0, &quot;no balance&quot;);
+
+    (bool ok,) = msg.sender.call{value: amt}(&quot;&quot;);   // ← effects pending
+    require(ok, &quot;send failed&quot;);
+
+    balance[msg.sender] = 0;       // ← state update AFTER external call
+}
+</code></pre>
+
+<p><strong>Impact</strong></p>
+
+<p>Loss of 100% of user deposits, in a single transaction, with no preconditions beyond depositing ≥ 1 wei.</p>
+
+<p><strong>Likelihood</strong></p>
+
+<p>Trivially high. Public exploit demonstrated; ~250K gas to execute.</p>
+
+<p><strong>Recommendation</strong></p>
+
+<p>Apply Checks-Effects-Interactions:</p>
+
+<pre><code class="lang-diff">
+ function withdraw() external {
+     uint256 amt = balance[msg.sender];
+     require(amt &gt; 0, &quot;no balance&quot;);
++    balance[msg.sender] = 0;
+     (bool ok,) = msg.sender.call{value: amt}(&quot;&quot;);
+     require(ok, &quot;send failed&quot;);
+-    balance[msg.sender] = 0;
+ }
+</code></pre>
+
+<p>Or add <code>nonReentrant</code> from OpenZeppelin's <code>ReentrancyGuard</code>. Prefer the CEI rewrite — it's lower gas and removes the need for the lock.</p>
+
+<p><strong>References</strong></p>
+
+<ul>
+<li>Skill: <a href="../skills/reentrancy/SKILL.md">reentrancy</a></li>
+<li>Working PoC: <code>test/exploits/ExploitREENT001.t.sol</code> (passes; attacker gains 11 ETH)</li>
+<li>Historical: dozens of incidents since The DAO (2016, $60M)</li>
+</ul>
+
+<hr>
+
+<h3>[ACCESS-001 | High] <code>setPaused</code> has no access control</h3>
+
+<p><strong>Confidence:</strong> High</p>
+<p><strong>Pattern:</strong> access-control</p>
+<p><strong>Location:</strong> <code>examples/VulnerableVault.sol:34</code></p>
+
+<p><strong>Summary</strong></p>
+
+<p><code>setPaused(bool)</code> is <code>external</code> with no modifier. Any address can flip the pause state.</p>
+
+<p><strong>Code</strong></p>
+
+<pre><code class="lang-solidity">
+function setPaused(bool p) external {
+    paused = p;
+}
+</code></pre>
+
+<p><strong>Impact</strong></p>
+
+<p>Griefing — adversary can pause withdrawals indefinitely. Funds are stuck while paused (combined with the missing pause-aware code in <code>withdraw</code>, the situation is actually worse: pause is recorded but never checked, so this is purely state pollution today; if <code>withdraw</code> ever gains a <code>whenNotPaused</code> modifier in the future, this becomes a permanent DoS).</p>
+
+<p><strong>Recommendation</strong></p>
+
+<pre><code class="lang-diff">
+- function setPaused(bool p) external {
++ function setPaused(bool p) external onlyOwner {
+     paused = p;
+ }
+</code></pre>
+
+<p>Plus inherit <code>Ownable</code> (or use the existing <code>owner</code> field).</p>
+
+<p><strong>References</strong></p>
+
+<ul>
+<li>Skill: <a href="../skills/access-control/SKILL.md">access-control</a></li>
+</ul>
+
+<hr>
+
+<h3>[ACCESS-002 | High] <code>rescue</code> can drain user deposits</h3>
+
+<p><strong>Confidence:</strong> High</p>
+<p><strong>Pattern:</strong> access-control + centralization-risk</p>
+<p><strong>Location:</strong> <code>examples/VulnerableVault.sol:40</code></p>
+
+<p><strong>Summary</strong></p>
+
+<p><code>rescue(address payable to)</code> lets <code>owner</code> transfer the contract's entire ether balance — which is <em>user deposits</em> — to any address. There is no token allowlist, no timelock, no per-call cap, and no two-step. A single-key compromise = 100% loss.</p>
+
+<p><strong>Code</strong></p>
+
+<pre><code class="lang-solidity">
+function rescue(address payable to) external {
+    require(msg.sender == owner, &quot;not owner&quot;);
+    to.transfer(address(this).balance);
+}
+</code></pre>
+
+<p><strong>Impact</strong></p>
+
+<p>A compromised owner key drains all user deposits. Users have no recourse.</p>
+
+<p><strong>Recommendation</strong></p>
+
+<ul>
+<li>Remove <code>rescue</code> entirely if not load-bearing.</li>
+<li>If retained, scope to non-deposit assets only (e.g. accidentally-sent ERC-20s) — explicitly exclude <code>address(this).balance</code>.</li>
+<li>Add a Timelock on owner actions.</li>
+<li>Move to a multi-sig (Gnosis Safe ≥ 3-of-5).</li>
+</ul>
+
+<p><strong>References</strong></p>
+
+<ul>
+<li>Skill: <a href="../skills/centralization-risk/SKILL.md">centralization-risk</a></li>
+</ul>
+
+<hr>
+
+<h3>[UNCHK-001 | High] Low-level call return value ignored</h3>
+
+<p><strong>Confidence:</strong> High</p>
+<p><strong>Pattern:</strong> unchecked-calls</p>
+<p><strong>Location:</strong> <code>examples/VulnerableVault.sol:46</code></p>
+
+<p><strong>Summary</strong></p>
+
+<p><code>notifyDepositor(address depositor, bytes calldata data)</code> invokes <code>depositor.call(data)</code> and discards the return value. Callers cannot tell whether the notification actually succeeded.</p>
+
+<p><strong>Code</strong></p>
+
+<pre><code class="lang-solidity">
+function notifyDepositor(address depositor, bytes calldata data) external {
+    depositor.call(data);          // ← return value not checked
+}
+</code></pre>
+
+<p><strong>Impact</strong></p>
+
+<p>Best-effort hooks become silent failures. If callers off-chain observe successful tx-level execution, they'll wrongly assume the notification reached the depositor. Gas can also be siphoned via this best-effort path (calling expensive contracts at no risk to the caller).</p>
+
+<p><strong>Recommendation</strong></p>
+
+<pre><code class="lang-diff">
+- depositor.call(data);
++ (bool ok,) = depositor.call(data);
++ require(ok, &quot;notify failed&quot;);
+</code></pre>
+
+<p>Or, if best-effort is intentional, return a status code rather than silently succeeding.</p>
+
+<p><strong>References</strong></p>
+
+<ul>
+<li>Skill: <a href="../skills/unchecked-calls/SKILL.md">unchecked-calls</a></li>
+</ul>
+
+<hr>
+
+<h3>[CENT-001 | Medium] Single-EOA owner with no two-step transfer</h3>
+
+<p><strong>Confidence:</strong> High</p>
+<p><strong>Pattern:</strong> centralization-risk</p>
+<p><strong>Location:</strong> <code>examples/VulnerableVault.sol:50</code></p>
+
+<p><strong>Summary</strong></p>
+
+<p><code>transferOwnership(address newOwner)</code> sets <code>owner = newOwner</code> immediately. If the admin transfers to a wrong/unowned address (typo, hardware wallet bug), the contract is permanently bricked under a key the admin can't access.</p>
+
+<p><strong>Recommendation</strong></p>
+
+<p>Use OZ <code>Ownable2Step</code>:</p>
+
+<pre><code class="lang-solidity">
+contract VulnerableVault is Ownable2Step {
+    constructor() Ownable(msg.sender) {}
+    // ... rest of contract
+}
+</code></pre>
+
+<p>This requires the new owner to call <code>acceptOwnership()</code> to confirm.</p>
+
+<p><strong>References</strong></p>
+
+<ul>
+<li>Skill: <a href="../skills/centralization-risk/SKILL.md">centralization-risk</a></li>
+</ul>
+
+<hr>
+
+<h3>[PRAGMA-001 | Low] Floating pragma <code>^0.8.20</code></h3>
+
+<p><strong>Confidence:</strong> High</p>
+<p><strong>Pattern:</strong> pragma-and-addresses</p>
+<p><strong>Location:</strong> <code>examples/VulnerableVault.sol:2</code></p>
+
+<p><strong>Summary</strong></p>
+
+<p><code>pragma solidity ^0.8.20;</code> floats to any 0.8.x patch release. Production deployments should pin the exact compiler used during audit.</p>
+
+<p><strong>Recommendation</strong></p>
+
+<p><code>pragma solidity 0.8.24;</code></p>
+
+<hr>
+
+<h2>Out of scope / limitations</h2>
+
+<ul>
+<li>ETH deposit accounting only; no ERC-20 paths exist.</li>
+<li>No fork-state validation (this is a local file, not a deployment).</li>
+</ul>
+
+<h2>Appendix</h2>
+
+<ul>
+<li>Tool: Rugproof v0.1.0</li>
+<li>PoC: <code>test/exploits/ExploitREENT001.t.sol</code> — passes (attacker drains 11 ETH)</li>
+<li>Findings JSON: <code>samples/audit-vulnerable-vault.json</code></li>
+</ul>
+
+<blockquote>Generated by Rugproof — https://omermaksutii.github.io/RugProof</blockquote>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <a href="docs/" style="color: var(--text-mid); text-decoration: none;">← all docs</a>
+      <span>v0.1.0</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/animations.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="/RugProof/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stability & versioning — Rugproof</title>
+<meta name="theme-color" content="#0a0904">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="bg-honeycomb"></div>
+<div class="bg-grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="logo-mark"></span>RUGPROOF</a>
+    <div class="nav-links">
+      <a href="index.html#features">features</a>
+      <a href="docs/">docs</a>
+      <a href="docs/commands.html">commands</a>
+      <a class="cta" href="https://github.com/omermaksutii/RugProof">github →</a>
+    </div>
+  </div>
+</nav>
+
+<main class="doc">
+  <div class="eyebrow" style="margin-bottom: 16px;">/docs/stability</div>
+  <h1>Stability &amp; <span style="font-style:italic;color:var(--honey)">versioning.</span></h1>
+  <p>Rugproof follows <a href="https://semver.org/">Semantic Versioning</a>. As of <strong>v1.0.0</strong>, the following surfaces are stable within the 1.x line.</p>
+
+  <h2>Stable surfaces (no breaking changes in 1.x)</h2>
+  <table>
+    <thead><tr><th>Surface</th><th>Guarantee</th></tr></thead>
+    <tbody>
+      <tr><td>Findings JSON schema</td><td><code>schemas/finding.schema.json</code> is frozen. New optional fields may be added; required fields and their meaning won't change.</td></tr>
+      <tr><td>Command names</td><td>Existing <code>/commands</code> keep their names and core behavior. New commands are additive.</td></tr>
+      <tr><td>MCP tool signatures</td><td>Tool names and required inputs are stable. New tools / optional inputs are additive.</td></tr>
+      <tr><td>Config keys</td><td><code>.rugproof.yml</code> keys are stable; new keys default to current behavior.</td></tr>
+      <tr><td>Offline behavior</td><td>Every server keeps its labeled-stub fallback; zero-config installs keep working.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>What can change in a minor (1.x)</h2>
+  <ul>
+    <li>New commands, agents, skills, MCP servers/tools, and rule packs.</li>
+    <li>Improved detection (more/better findings) — recall and precision may rise.</li>
+    <li>New optional config keys and output fields.</li>
+    <li>Deeper integrations behind existing tools (e.g. more chains).</li>
+  </ul>
+
+  <h2>What only changes in a major (2.0)</h2>
+  <ul>
+    <li>Removing or renaming a command, MCP tool, or required finding field.</li>
+    <li>Changing the meaning of an existing severity or grade.</li>
+    <li>Dropping a supported language or chain.</li>
+  </ul>
+
+  <h2>Deprecation policy</h2>
+  <p>Anything slated for removal is marked deprecated for at least one minor release, with a migration note in <a href="https://github.com/omermaksutii/RugProof/blob/main/CHANGELOG.md">the changelog</a>, before a major removes it.</p>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <a href="docs/" style="color: var(--text-mid); text-decoration: none;">← docs index</a>
+      <span>v1.0.1</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/animations.js"></script>
+</body>
+</html>

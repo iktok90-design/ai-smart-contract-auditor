@@ -1,0 +1,10 @@
+{
+  "target": "FlashLoanGovernance",
+  "address": "",
+  "chain": "local",
+  "date": "2026-05-13",
+  "grade": "F",
+  "counts": { "critical": 2, "high": 1, "medium": 0, "low": 0, "info": 0 },
+  "top_finding": "Vote weight from spot balance + 1s voting window (Beanstalk-style)",
+  "report_url": "https://iktok90-design.github.io/AuditSentry/docs/sample-flash-loan-governance"
+}

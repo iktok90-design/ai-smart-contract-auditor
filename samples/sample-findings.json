@@ -1,0 +1,10 @@
+{
+  "target": "VulnerableVault",
+  "address": "0xabcd1234567890abcdef1234567890abcdef1234",
+  "chain": "berachain",
+  "date": "2026-05-13",
+  "grade": "F",
+  "counts": { "critical": 2, "high": 4, "medium": 3, "low": 5, "info": 8 },
+  "top_finding": "Reentrancy in withdraw() drains the entire vault",
+  "report_url": "https://iktok90-design.github.io/AuditSentry/AuditSentry/docs/sample-vulnerable-vault.html"
+}
