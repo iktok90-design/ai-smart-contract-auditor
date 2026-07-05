@@ -1,0 +1,39 @@
+# .rugproofignore — file globs Rugproof should skip entirely.
+# Same syntax as .gitignore. Apply at repo root.
+#
+# Use this file for paths to skip; use `.rugproof.yml`'s `ignore:` section for
+# per-finding suppressions with reasons.
+
+# Tests, mocks, and scripts
+test/**
+tests/**
+script/**
+scripts/**
+mocks/**
+deployments/**
+
+# Generated artifacts
+out/**
+cache/**
+broadcast/**
+artifacts/**
+typechain-types/**
+
+# Vendor / dependencies
+lib/**
+node_modules/**
+vendor/**
+
+# OZ / Solady / Uniswap reference implementations (audit the FORK, not the reference)
+**/openzeppelin-contracts/**
+**/solady/**
+**/v2-core/**
+**/v3-core/**
+**/v3-periphery/**
+
+# Auto-generated bindings
+**/*.g.sol
+**/I*.sol             # uncomment if your interfaces are auto-generated
+
+# Anything containing "fixture" in the path
+**/fixtures/**
