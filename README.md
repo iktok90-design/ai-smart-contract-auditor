@@ -58,7 +58,6 @@ Before installing AuditSentry, make sure you have the following tools:
 | Tool | Version | Purpose |
 |---|---|---|
 | [Node.js](https://nodejs.org) | **>= 18** (LTS) | Run MCP servers and scripts (npm included) |
-| [Foundry](https://book.getfoundry.sh/getting-started/installation) | **>= 0.3.0** | Solidity compilation, testing, and fork simulation |
 | [Git](https://git-scm.com) | Any recent | Clone the repository |
 | `make` | Built-in | Run the build pipeline (`make build`) |
 
@@ -70,7 +69,6 @@ Before installing AuditSentry, make sure you have the following tools:
 ```bash
 node -v      # should show v18.x or higher
 npm -v       # should show v9.x or higher
-forge --version
 git --version
 make --version
 ```
