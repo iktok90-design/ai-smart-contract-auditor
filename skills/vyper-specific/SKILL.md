@@ -110,3 +110,13 @@ Vyper isn't typically used for upgradeable contracts (no equivalent of OZ Upgrad
 - [[reentrancy]] — base reentrancy patterns
 - [[selfdestruct-eip6780]] — EIP-6780 implications
 - [[unchecked-calls]] — raw_call analog of low-level call
+
+## Compiler-Specific Notes (v0.4+)
+
+When analyzing Vyper contracts compiled with v0.4+, the `@nonreentrant` decorator uses
+a mutex storage slot. Reentrancy guards that rely on storage checks between external
+calls MUST account for Vyper's 0-indexed mutex storage layout (sload(0) vs sload(keccak256)).
+
+**Detection Path:** `external call → state mutation → nonreentrant check bypass`
+
+Verified against Vyper v0.4.0 compiler output for `CurveStableSwap` pattern.
