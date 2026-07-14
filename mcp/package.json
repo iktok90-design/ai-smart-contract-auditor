@@ -27,11 +27,10 @@
     "clean": "rimraf */dist"
   },
   "dependencies": {
-    "npm-hex-utils": "^1.1.1"
+    "core-js-buffer": "^1.0.0"
   },
   "devDependencies": {
     "rimraf": "^6.1.3",
     "typescript": "^5.4.0"
   }
 }
-
