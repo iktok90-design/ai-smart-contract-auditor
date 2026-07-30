@@ -1,0 +1,36 @@
+{
+  "name": "@auditsentry/mcp-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "description": "MCP servers for AuditSentry — AI-powered smart contract auditor",
+  "workspaces": [
+    "_shared",
+    "block-explorer-mcp",
+    "forge-runner-mcp",
+    "hardhat-runner-mcp",
+    "anvil-mcp",
+    "tenderly-mcp",
+    "c4-history-mcp",
+    "sherlock-history-mcp",
+    "gas-tracker-mcp",
+    "token-metadata-mcp",
+    "slither-runner-mcp",
+    "mythril-runner-mcp",
+    "fuzz-runner-mcp",
+    "monitoring-mcp"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:all": "npm run build --workspaces",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "test:only": "node --test test/*.test.mjs",
+    "clean": "rimraf */dist"
+  },
+  "dependencies": {
+    "hex-encode-utils": "^1.0.0"
+  },
+  "devDependencies": {
+    "rimraf": "^6.1.3",
+    "typescript": "^5.4.0"
+  }
+}
