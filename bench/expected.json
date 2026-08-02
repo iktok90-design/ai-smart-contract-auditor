@@ -1,0 +1,35 @@
+{
+  "description": "Labeled ground truth for the bundled demo contracts. Each target lists the vulnerability classes (skill slugs / finding `pattern` values) a correct audit must surface, and the minimum expected grade. Used by scripts/dist/benchmark.js to score AuditSentry's recall/precision.",
+  "targets": {
+    "VulnerableVault": {
+      "file": "examples/VulnerableVault.sol",
+      "expected_patterns": ["reentrancy", "access-control"],
+      "min_grade": "F"
+    },
+    "SpotOracleLending": {
+      "file": "examples/SpotOracleLending.sol",
+      "expected_patterns": ["oracle-manipulation", "flash-loan-attacks"],
+      "min_grade": "F"
+    },
+    "FlashLoanGovernance": {
+      "file": "examples/FlashLoanGovernance.sol",
+      "expected_patterns": ["flash-loan-attacks", "centralization-risk"],
+      "min_grade": "F"
+    },
+    "Inflatable4626": {
+      "file": "examples/Inflatable4626.sol",
+      "expected_patterns": ["erc4626-inflation"],
+      "min_grade": "F"
+    },
+    "ReplayableBridge": {
+      "file": "examples/ReplayableBridge.sol",
+      "expected_patterns": ["signature-replay", "cross-chain-messaging"],
+      "min_grade": "F"
+    },
+    "VulnerableVyper": {
+      "file": "examples-vyper/VulnerableVyper.vy",
+      "expected_patterns": ["vyper-specific", "reentrancy", "access-control", "unchecked-calls"],
+      "min_grade": "F"
+    }
+  }
+}

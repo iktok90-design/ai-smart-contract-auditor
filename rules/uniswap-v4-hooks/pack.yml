@@ -1,0 +1,11 @@
+name: uniswap-v4-hooks
+version: 1.0.0
+author: AuditSentry
+license: MIT
+description: Uniswap V4 hook footguns — permission-flag/address mismatches, reentrancy through the PoolManager unlock callback, and unsettled BeforeSwapDelta/hookDelta currency accounting.
+target: solidity
+requires_auditsentry: ">=0.2.0"
+rules:
+  - v4-hook-permission-flags-mismatch
+  - v4-hook-reentrancy-via-unlock
+  - v4-hook-delta-accounting
