@@ -1,0 +1,50 @@
+{
+  "description": "Audit gallery registry. Each entry renders one card on /gallery. Adding an audit = appending an entry here, then running `make gallery`. (This is the static seam for the future dynamic submission backend.)",
+  "entries": [
+    {
+      "target": "VulnerableVault",
+      "vuln": "reentrancy + access control",
+      "grade": "F",
+      "top_finding": "Reentrancy in withdraw() drains the entire vault",
+      "counts": { "critical": 2, "high": 4, "medium": 3, "low": 5, "info": 8 },
+      "card": "assets/sample-card.png",
+      "report": "docs/sample-vulnerable-vault.html"
+    },
+    {
+      "target": "SpotOracleLending",
+      "vuln": "oracle manipulation + flash loan",
+      "grade": "F",
+      "top_finding": "Spot AMM price used for collateral + liquidations",
+      "counts": { "critical": 3, "high": 1, "medium": 0, "low": 0, "info": 0 },
+      "card": "assets/card-spot-oracle.png",
+      "report": "docs/sample-spot-oracle-lending.html"
+    },
+    {
+      "target": "FlashLoanGovernance",
+      "vuln": "governance flash loan (Beanstalk-style)",
+      "grade": "F",
+      "top_finding": "Vote weight from spot balance + 1s voting window",
+      "counts": { "critical": 2, "high": 1, "medium": 0, "low": 0, "info": 0 },
+      "card": "assets/card-flash-loan-gov.png",
+      "report": "docs/sample-flash-loan-governance.html"
+    },
+    {
+      "target": "Inflatable4626",
+      "vuln": "ERC-4626 donation/inflation",
+      "grade": "F",
+      "top_finding": "ERC-4626 inflation attack via first-deposit donation",
+      "counts": { "critical": 1, "high": 2, "medium": 0, "low": 0, "info": 0 },
+      "card": "assets/card-inflatable.png",
+      "report": "docs/sample-inflatable-4626.html"
+    },
+    {
+      "target": "ReplayableBridge",
+      "vuln": "signature replay (cross-chain)",
+      "grade": "F",
+      "top_finding": "Cross-chain replay: no nonce, no chainId, no verifyingContract",
+      "counts": { "critical": 2, "high": 2, "medium": 0, "low": 0, "info": 0 },
+      "card": "assets/card-replayable-bridge.png",
+      "report": "docs/sample-replayable-bridge.html"
+    }
+  ]
+}
