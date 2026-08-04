@@ -1,0 +1,105 @@
+# .rugproof.yml — Rugproof project configuration
+# Copy to .rugproof.yml at your repo root and edit.
+
+# CI / hook severity gate. Findings at this severity or worse cause non-zero exit.
+# One of: critical | high | medium | low | info
+severity_threshold: high
+
+# Severity profile preset. Overrides individual rule weights.
+# One of: strict | standard | lenient
+profile: standard
+
+# Target chains for live-fork audits (/audit-live, /simulate, /verify-deploy).
+chains:
+  - ethereum
+  - berachain
+  - arbitrum
+  - base
+  - optimism
+  - polygon
+  - bsc
+  - linea
+  - zksync
+  - scroll
+
+# File globs to audit. Relative to repo root.
+include:
+  - "src/**/*.sol"
+  - "contracts/**/*.sol"
+
+# File globs to skip.
+exclude:
+  - "test/**"
+  - "script/**"
+  - "lib/**"
+  - "node_modules/**"
+  - "**/*.t.sol"
+
+# Per-finding suppressions. Use sparingly and document the reason.
+ignore:
+  - id: REENT-001
+    path: "src/Vault.sol"
+    reason: "Single trusted caller, reviewed 2025-Q4"
+
+# Subagents to dispatch automatically based on detected protocol type.
+# Set to `false` to disable auto-dispatch and require manual invocation.
+auto_specialists: true
+
+# MCP server config overrides.
+mcp:
+  block_explorer:
+    # API keys can also come from env vars: ETHERSCAN_API_KEY, BERATRAIL_API_KEY, etc.
+    cache_ttl_seconds: 3600
+  forge_runner:
+    forge_path: forge
+    default_fork_block_lag: 5
+
+# Reporting defaults.
+report:
+  formats: [markdown, html, json, png]
+  output_dir: "./rugproof-reports"
+  include_remediation_patches: true
+  audit_card:
+    branding: true
+    public_gallery_submit: false
+
+# Hook configuration. Hooks read these flags to decide what to do.
+hooks:
+  pre_commit:
+    enabled: true
+    fail_on: critical
+  pre_push:
+    enabled: true
+    fail_on: high
+  pre_deploy:
+    enabled: true
+    fail_on: medium
+  post_test:
+    enabled: true
+
+# Caching. Speeds up subsequent runs by skipping unchanged files.
+# See skill: caching-and-incremental.
+cache:
+  enabled: true
+  dir: "~/.cache/rugproof"
+  ttl_days: 30
+
+# Privacy / network controls.
+#   privacy_mode  → never send any data off-machine; cache stored in tmpfs only.
+#   offline       → no external API calls (block explorers, GitHub, telemetry).
+#                   Local LLM and local forks (anvil) still work.
+privacy_mode: false
+offline: false
+
+# Telemetry. ALL OFF BY DEFAULT.
+# Enable to help us find bugs. Never sends contract source, paths, or findings.
+# See scripts/src/telemetry.ts for exact payload shape.
+telemetry:
+  enabled: false                # plugin-version + command name + outcome only
+  crash_reports: false          # anonymized stack traces
+  endpoint: ""                  # leave blank to disable network send
+
+# Auto-update notifications.
+update_check:
+  enabled: true                 # checks GitHub releases for newer plugin version
+  notify_on_run: true           # show "update available" hint at end of /audit
