@@ -1,0 +1,105 @@
+{
+  "target": "examples/VulnerableVault.sol",
+  "date": "2026-05-13",
+  "commit": "HEAD",
+  "chain": "local",
+  "executive_summary": "VulnerableVault is a 56-line ETH custody contract with a classic fund-draining reentrancy in withdraw() exploitable in a single tx, two privileged functions lacking access control, an unchecked external call, and an EOA admin with sweep authority. Not safe to deploy.",
+  "counts": { "critical": 1, "high": 3, "medium": 1, "low": 1, "info": 0 },
+  "grade": "F",
+  "scope": {
+    "files_count": 1, "loc": 56,
+    "solidity_versions": "^0.8.20 (compiled with 0.8.24)",
+    "excluded": "—", "window": "single-pass"
+  },
+  "methodology": {
+    "skills_count": 5,
+    "skills": "reentrancy, access-control, unchecked-calls, centralization-risk, pragma-and-addresses",
+    "specialists": "attacker, defender",
+    "strict": false
+  },
+  "tool": { "version": "0.1.0", "foundry": "1.5.1" },
+  "trust_report": [
+    { "function": "transferOwnership", "description": "Immediate owner rotation with no two-step", "authority": "single EOA", "timelock": "none", "risk": "full takeover" },
+    { "function": "rescue", "description": "Owner can transfer entire contract balance anywhere", "authority": "single EOA", "timelock": "none", "risk": "100% user funds drained" },
+    { "function": "setPaused", "description": "Pause flag with no access control", "authority": "anonymous", "timelock": "none", "risk": "griefing" }
+  ],
+  "findings": [
+    {
+      "id": "REENT-001", "severity": "Critical", "confidence": "HIGH",
+      "title": "Reentrancy drains vault via CEI violation",
+      "pattern": "reentrancy (classic)",
+      "path": "examples/VulnerableVault.sol", "line": 24,
+      "summary": "withdraw() sends ether before zeroing balance; attacker re-enters via receive() to drain the vault.",
+      "code": "function withdraw() external {\n    uint256 amt = balance[msg.sender];\n    (bool ok,) = msg.sender.call{value: amt}(\"\");\n    require(ok);\n    balance[msg.sender] = 0;\n}",
+      "impact": "Loss of 100% of user deposits in one tx. PoC demonstrates 1 ETH attacker → 11 ETH withdrawn.",
+      "likelihood": "Trivial; ~250K gas, no preconditions.",
+      "recommendation": "Move state update before the external call (CEI). Or add nonReentrant.",
+      "diff": "-    (bool ok,) = msg.sender.call{value: amt}(\"\");\n-    require(ok);\n-    balance[msg.sender] = 0;\n+    balance[msg.sender] = 0;\n+    (bool ok,) = msg.sender.call{value: amt}(\"\");\n+    require(ok);",
+      "references": ["skills/reentrancy/SKILL.md", "test/exploits/ExploitREENT001.t.sol"]
+    },
+    {
+      "id": "ACCESS-001", "severity": "High", "confidence": "HIGH",
+      "title": "setPaused has no access control",
+      "pattern": "access-control",
+      "path": "examples/VulnerableVault.sol", "line": 34,
+      "summary": "Anyone can call setPaused(bool) — pause state controllable by adversary.",
+      "code": "function setPaused(bool p) external { paused = p; }",
+      "impact": "State pollution today; full DoS if any future function gains whenNotPaused gating.",
+      "likelihood": "Trivial.",
+      "recommendation": "Add onlyOwner modifier."
+    },
+    {
+      "id": "ACCESS-002", "severity": "High", "confidence": "HIGH",
+      "title": "rescue can drain user deposits",
+      "pattern": "access-control + centralization-risk",
+      "path": "examples/VulnerableVault.sol", "line": 40,
+      "summary": "Owner can transfer entire contract balance (= user deposits) anywhere with no allowlist or timelock.",
+      "code": "function rescue(address payable to) external onlyOwner { to.transfer(address(this).balance); }",
+      "impact": "Single-key compromise = 100% user fund loss.",
+      "likelihood": "Conditional on key compromise or owner malice.",
+      "recommendation": "Remove or scope to non-deposit assets; add Timelock + multi-sig."
+    },
+    {
+      "id": "UNCHK-001", "severity": "High", "confidence": "HIGH",
+      "title": "Low-level call return value ignored",
+      "pattern": "unchecked-calls",
+      "path": "examples/VulnerableVault.sol", "line": 46,
+      "summary": "depositor.call(data) silently swallows failure.",
+      "code": "depositor.call(data);",
+      "impact": "Silent notification failures; gas-grief surface.",
+      "likelihood": "Always.",
+      "recommendation": "Capture return value; require(ok)."
+    },
+    {
+      "id": "CENT-001", "severity": "Medium", "confidence": "HIGH",
+      "title": "Single-EOA owner with no two-step transfer",
+      "pattern": "centralization-risk",
+      "path": "examples/VulnerableVault.sol", "line": 50,
+      "summary": "transferOwnership applies immediately; typo can permanently brick contract.",
+      "code": "function transferOwnership(address newOwner) external onlyOwner { owner = newOwner; }",
+      "impact": "Operational risk on owner rotation.",
+      "likelihood": "Conditional on operator error.",
+      "recommendation": "Use Ownable2Step."
+    },
+    {
+      "id": "PRAGMA-001", "severity": "Low", "confidence": "HIGH",
+      "title": "Floating pragma ^0.8.20",
+      "pattern": "pragma-and-addresses",
+      "path": "examples/VulnerableVault.sol", "line": 2,
+      "summary": "Pin compiler version to match audited bytecode.",
+      "code": "pragma solidity ^0.8.20;",
+      "impact": "Future minor compiler updates can change codegen.",
+      "likelihood": "Conditional on rebuild.",
+      "recommendation": "pragma solidity 0.8.24;"
+    }
+  ],
+  "limitations": [
+    "ETH deposit accounting only; no ERC-20 paths exist.",
+    "No fork-state validation (this is a local file, not a deployment)."
+  ],
+  "paths": {
+    "json": "samples/audit-vulnerable-vault.json",
+    "html": "samples/audit-vulnerable-vault.html",
+    "png":  "samples/sample-card.png"
+  }
+}

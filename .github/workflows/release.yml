@@ -1,0 +1,72 @@
+name: AuditSentry — release
+
+on:
+  push:
+    tags: [ "v*" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+
+      - uses: actions/setup-node@v6
+        with: { node-version: "22" }
+
+      - name: Build MCP servers
+        working-directory: mcp
+        run: |
+          npm install
+          npm run build
+
+      - name: Build scripts
+        working-directory: scripts
+        run: |
+          npm install
+          npm run build
+
+      - name: Validate plugin.json
+        run: node -e 'const p=require("./.claude-plugin/plugin.json"); if(!p.name||!p.version) throw new Error("invalid plugin.json"); console.log("plugin.json ok:", p.name, p.version);'
+
+      - name: Version sync check
+        run: node scripts/check-versions.mjs
+
+      - name: Tag matches manifest version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          MANIFEST="$(node -p 'require("./.claude-plugin/plugin.json").version')"
+          if [ "$TAG" != "$MANIFEST" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match plugin.json version $MANIFEST"
+            exit 1
+          fi
+          echo "tag matches manifest: $MANIFEST"
+
+      - name: Package release
+        run: |
+          mkdir -p _release
+          tar -cz \
+            --exclude="**/node_modules" \
+            --exclude="**/dist" \
+            --exclude=".git" \
+            --exclude="lib" \
+            --exclude="out" \
+            --exclude="_release" \
+            -f _release/auditsentry-${{ github.ref_name }}-source.tar.gz .
+
+      - name: Bundle dist
+        run: |
+          tar -cz -f _release/auditsentry-${{ github.ref_name }}-dist.tar.gz \
+            mcp/*/dist mcp/*/package.json \
+            scripts/dist scripts/package.json
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: _release/*.tar.gz
+          generate_release_notes: true

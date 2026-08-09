@@ -1,0 +1,64 @@
+name: New vulnerability rule
+description: Propose a new auto-invoked detection skill (a "rule")
+labels: ["new-rule"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Skill name
+      description: kebab-case, will become the directory name under skills/
+      placeholder: "my-vuln-class"
+    validations:
+      required: true
+
+  - type: textarea
+    id: trigger
+    attributes:
+      label: When the skill should activate
+      description: Concrete patterns/keywords/imports.
+      placeholder: |
+        - any function calling `transferFrom` on user-supplied tokens
+        - inside `for` loops touching `mapping(address => ...)` storage
+    validations:
+      required: true
+
+  - type: textarea
+    id: pattern
+    attributes:
+      label: Example vulnerable code
+      description: Smallest snippet that demonstrates the bug.
+      render: solidity
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Worst-case severity
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+        - Info
+    validations:
+      required: true
+
+  - type: textarea
+    id: incidents
+    attributes:
+      label: Real-world incidents (optional)
+      description: Link to past hacks / disclosures matching this pattern.
+      placeholder: "Beanstalk (Apr 2022, $182M) — same root cause."
+
+  - type: textarea
+    id: remediation
+    attributes:
+      label: Recommended fix
+      description: The canonical mitigation. Diff or pattern.
+
+  - type: textarea
+    id: false_positives
+    attributes:
+      label: False-positive notes
+      description: When does the pattern *not* indicate a bug?

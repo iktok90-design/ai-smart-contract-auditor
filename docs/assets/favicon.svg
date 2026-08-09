@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8a849"/>
+      <stop offset="100%" stop-color="#c4843a"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield silhouette -->
+  <path d="M32 4 L56 14 L56 32 Q56 50 32 60 Q8 50 8 32 L8 14 Z" fill="url(#g)"/>
+  <!-- Inner R mark -->
+  <text x="32" y="44" font-size="36" font-weight="900" font-family="Georgia, serif"
+        fill="#0d1117" text-anchor="middle">R</text>
+</svg>

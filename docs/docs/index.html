@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="/RugProof/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Docs — Rugproof</title>
+<meta name="theme-color" content="#0a0904">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<div class="bg-honeycomb"></div>
+<div class="bg-grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html"><span class="logo-mark"></span>RUGPROOF</a>
+    <div class="nav-links">
+      <a href="index.html#features">features</a>
+      <a href="index.html#stack">stack</a>
+      <a href="index.html#install">install</a>
+      <a href="gallery/">gallery</a>
+      <a href="docs/" style="color: var(--honey);">docs</a>
+      <a class="cta" href="https://github.com/omermaksutii/RugProof">github →</a>
+    </div>
+  </div>
+</nav>
+
+<main class="doc">
+  <div class="eyebrow" style="margin-bottom: 16px;">/docs</div>
+  <h1>Sample <span style="font-style: italic; color: var(--honey);">audit reports.</span></h1>
+  <p>What Rugproof produces on the bundled intentionally-vulnerable demo contracts.</p>
+
+  <h2>Reports</h2>
+  <table>
+    <thead><tr><th>Contract</th><th>Vuln class</th><th>Grade</th></tr></thead>
+    <tbody>
+      <tr><td><a href="docs/sample-vulnerable-vault.html">VulnerableVault</a></td><td>reentrancy + access control</td><td>F</td></tr>
+      <tr><td><a href="docs/sample-spot-oracle-lending.html">SpotOracleLending</a></td><td>oracle manipulation + flash loan</td><td>F</td></tr>
+      <tr><td><a href="docs/sample-flash-loan-governance.html">FlashLoanGovernance</a></td><td>governance flash loan (Beanstalk-style)</td><td>F</td></tr>
+      <tr><td><a href="docs/sample-inflatable-4626.html">Inflatable4626</a></td><td>ERC-4626 donation/inflation</td><td>F</td></tr>
+      <tr><td><a href="docs/sample-replayable-bridge.html">ReplayableBridge</a></td><td>signature replay (cross-chain)</td><td>F</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Reference</h2>
+  <p>Browsable, generated from source on every release:</p>
+  <ul>
+    <li><a href="docs/commands.html">Commands (44)</a> — cheatsheet + a "which command?" decision tree</li>
+    <li><a href="docs/skills.html">Vulnerability skills (42)</a> — auto-invoked detection library</li>
+    <li><a href="docs/agents.html">Specialist subagents (23)</a> — dispatched by protocol type</li>
+    <li><a href="docs/mcp-reference.html">MCP servers (11)</a> — chain I/O, runners, history DBs</li>
+    <li><a href="docs/configuration.html">Configuration</a> — full <code>.rugproof.yml</code> schema + recipes</li>
+    <li><a href="docs/troubleshooting.html">Troubleshooting</a> — common issues &amp; offline mode</li>
+    <li><a href="docs/telemetry.html">Telemetry &amp; privacy</a> — what's sent, how to opt out</li>
+    <li><a href="docs/stability.html">Stability &amp; versioning</a> — what the 1.x line guarantees</li>
+  </ul>
+
+  <h3>Slash commands (44)</h3>
+  <p>Audit, exploit, simulation, testing, output, workflow, and integration. See the <a href="docs/commands.html">commands reference</a>.</p>
+
+  <h3>Vulnerability skills (42)</h3>
+  <p>Auto-loaded based on detected code patterns. Covers the full CWE/SWC catalog plus 2025 hot-topics: ERC-4337 AA, cross-chain messaging, ERC-7683 intents, EigenLayer restaking, ERC-4626 inflation, Diamond / EIP-2535, Permit2, ERC-1271, plus ve-lock governance, fee-on-transfer, signature malleability, MEV/PBS, liquidation cascades, oracle redundancy, cross-contract state, and ZK verifier bugs.</p>
+
+  <h3>Specialist subagents (23)</h3>
+  <p>Functional (attacker, defender, exploit-poc-writer, invariant-writer, gas-optimizer, remediation-suggester, report-writer, assembly-auditor) and protocol-specific (AMM, lending, staking, bridge, governance, vault, NFT, AA, cross-chain msg, restaking, intents, Vyper, L2/sequencer, economic-rug, ZK-verifier).</p>
+
+  <h3>MCP servers (11)</h3>
+  <p>block-explorer (Etherscan v2 multichain), forge-runner, hardhat-runner, anvil, tenderly, c4-history, sherlock-history, gas-tracker, token-metadata (+ GoPlus safety), slither-runner, mythril-runner.</p>
+
+  <h2>Configuration</h2>
+  <p>See the <a href="docs/configuration.html">configuration guide</a> or <code>.rugproof.yml.example</code> in the repo (severity thresholds, chains, hooks, caching, telemetry, privacy mode).</p>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <a href="index.html" style="color: var(--text-mid); text-decoration: none;">← back to home</a>
+      <span>v0.3.0</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/animations.js"></script>
+</body>
+</html>

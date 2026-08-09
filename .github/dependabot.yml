@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/mcp"
+    schedule: { interval: "weekly", day: "monday" }
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "mcp"]
+    commit-message:
+      prefix: "deps(mcp):"
+
+  - package-ecosystem: "npm"
+    directory: "/scripts"
+    schedule: { interval: "weekly", day: "monday" }
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "scripts"]
+    commit-message:
+      prefix: "deps(scripts):"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule: { interval: "monthly" }
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "deps(ci):"
+
+  # NOTE: gitsubmodule ecosystem disabled. We have .gitmodules describing the
+  # Foundry dep URLs (forge-std, OZ, solady) for contributors who want to bootstrap
+  # via `git submodule update --init`, but lib/ is .gitignored — the URLs are
+  # informational only. Re-enable this block only if lib/ is committed as real submodules.

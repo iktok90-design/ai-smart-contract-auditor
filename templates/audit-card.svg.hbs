@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Rugproof Audit Card — square (1200×1200), Twitter-friendly.
+  Style: classic dark with Berachain-honey accent.
+  Variables (Handlebars):
+    {{target}}       contract or repo name
+    {{address}}      0x... (truncated for display)
+    {{chain}}        chain name
+    {{date}}         YYYY-MM-DD
+    {{grade}}        A+ | A | B | C | D | E | F
+    {{grade_color}}  hex color matching grade
+    counts.critical / counts.high / counts.medium / counts.low / counts.info
+    top_finding      one-line headline of worst finding
+    report_url       permalink to full report (optional)
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1200 1200"
+     width="1200" height="1200"
+     font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="grade-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="{{grade_color}}" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="{{grade_color}}" stop-opacity="0.05"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+
+  <!-- background -->
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+
+  <!-- subtle grid -->
+  <g stroke="#1f262d" stroke-width="1" opacity="0.5">
+    <line x1="0" y1="200" x2="1200" y2="200"/>
+    <line x1="0" y1="400" x2="1200" y2="400"/>
+    <line x1="0" y1="800" x2="1200" y2="800"/>
+    <line x1="0" y1="1000" x2="1200" y2="1000"/>
+  </g>
+
+  <!-- header strip -->
+  <text x="80" y="120" fill="#8b949e" font-size="28" letter-spacing="6"
+        font-weight="600" text-transform="uppercase">RUGPROOF · SECURITY AUDIT</text>
+
+  <!-- contract name -->
+  <text x="80" y="220" fill="#e6edf3" font-size="64" font-weight="800">{{target}}</text>
+
+  <!-- address + chain -->
+  <text x="80" y="270" fill="#8b949e" font-size="24" font-family="ui-monospace, monospace">
+    {{address}} · {{chain}} · {{date}}
+  </text>
+
+  <!-- grade panel -->
+  <rect x="80" y="360" width="500" height="500" rx="32"
+        fill="url(#grade-bg)" stroke="{{grade_color}}" stroke-width="3"/>
+  <text x="330" y="710" fill="{{grade_color}}" font-size="380" font-weight="900"
+        text-anchor="middle" font-family="Georgia, ui-serif, serif"
+        filter="url(#glow)">{{grade}}</text>
+  <text x="330" y="800" fill="#8b949e" font-size="28" letter-spacing="4"
+        text-anchor="middle" text-transform="uppercase">GRADE</text>
+
+  <!-- severity tiles -->
+  <g transform="translate(660, 360)">
+    <!-- Critical -->
+    <rect x="0" y="0" width="460" height="90" rx="12" fill="#1f262d"/>
+    <rect x="0" y="0" width="6" height="90" fill="#ff4747"/>
+    <text x="36" y="40" fill="#8b949e" font-size="16" letter-spacing="3">CRITICAL</text>
+    <text x="36" y="80" fill="#ff4747" font-size="48" font-weight="800">{{counts.critical}}</text>
+    <text x="440" y="60" fill="#ff4747" font-size="36" text-anchor="end">⛔</text>
+
+    <!-- High -->
+    <rect x="0" y="105" width="460" height="90" rx="12" fill="#1f262d"/>
+    <rect x="0" y="105" width="6" height="90" fill="#ff8c42"/>
+    <text x="36" y="145" fill="#8b949e" font-size="16" letter-spacing="3">HIGH</text>
+    <text x="36" y="185" fill="#ff8c42" font-size="48" font-weight="800">{{counts.high}}</text>
+    <text x="440" y="165" fill="#ff8c42" font-size="36" text-anchor="end">⚠</text>
+
+    <!-- Medium -->
+    <rect x="0" y="210" width="460" height="90" rx="12" fill="#1f262d"/>
+    <rect x="0" y="210" width="6" height="90" fill="#ffc94a"/>
+    <text x="36" y="250" fill="#8b949e" font-size="16" letter-spacing="3">MEDIUM</text>
+    <text x="36" y="290" fill="#ffc94a" font-size="48" font-weight="800">{{counts.medium}}</text>
+    <text x="440" y="270" fill="#ffc94a" font-size="36" text-anchor="end">⚡</text>
+
+    <!-- Low -->
+    <rect x="0" y="315" width="460" height="90" rx="12" fill="#1f262d"/>
+    <rect x="0" y="315" width="6" height="90" fill="#4ac3ff"/>
+    <text x="36" y="355" fill="#8b949e" font-size="16" letter-spacing="3">LOW</text>
+    <text x="36" y="395" fill="#4ac3ff" font-size="48" font-weight="800">{{counts.low}}</text>
+    <text x="440" y="375" fill="#4ac3ff" font-size="36" text-anchor="end">◌</text>
+
+    <!-- Info -->
+    <rect x="0" y="420" width="460" height="80" rx="12" fill="#1f262d"/>
+    <rect x="0" y="420" width="6" height="80" fill="#8b949e"/>
+    <text x="36" y="455" fill="#8b949e" font-size="16" letter-spacing="3">INFO</text>
+    <text x="36" y="490" fill="#8b949e" font-size="40" font-weight="800">{{counts.info}}</text>
+  </g>
+
+  <!-- top finding -->
+  <rect x="80" y="900" width="1040" height="140" rx="16" fill="#1f262d" stroke="#30363d"/>
+  <text x="100" y="940" fill="#8b949e" font-size="18" letter-spacing="4">TOP FINDING</text>
+  <text x="100" y="990" fill="#e6edf3" font-size="32" font-weight="600">{{top_finding}}</text>
+
+  <!-- footer / branding -->
+  <text x="80" y="1130" fill="#f8a849" font-size="32" font-weight="800" letter-spacing="2">RUGPROOF</text>
+  <text x="80" y="1160" fill="#8b949e" font-size="18">rugproof your code before someone else does</text>
+  <text x="1120" y="1140" fill="#8b949e" font-size="18" text-anchor="end" font-family="ui-monospace, monospace">omermaksutii.github.io/RugProof</text>
+</svg>

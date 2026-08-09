@@ -1,0 +1,41 @@
+{
+  "name": "auditsentry",
+  "owner": {
+    "name": "Iktok Security Labs",
+    "url": "https://github.com/iktok90-design"
+  },
+  "description": "AuditSentry — AI-powered smart contract security auditor for Claude Code. Automated vulnerability detection, exploit PoCs, mainnet-fork simulation, and professional audit reports for Solidity & Vyper across all EVM chains.",
+  "plugins": [
+    {
+      "name": "auditsentry",
+      "source": "./",
+      "description": "AI-powered smart contract security auditor for Claude Code — vuln detection, exploit PoCs, mainnet-fork sims, audit cards, on-chain certificates.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Iktok Security Labs",
+        "url": "https://github.com/iktok90-design/ai-smart-contract-auditor"
+      },
+      "homepage": "https://github.com/iktok90-design/ai-smart-contract-auditor",
+      "repository": "https://github.com/iktok90-design/ai-smart-contract-auditor",
+      "license": "MIT",
+      "category": "security",
+      "keywords": [
+        "ai",
+        "security",
+        "audit",
+        "smart-contract",
+        "solidity",
+        "vyper",
+        "defi",
+        "ethereum",
+        "evm",
+        "vulnerability",
+        "scanner",
+        "exploit",
+        "claude-code",
+        "mcp",
+        "web3"
+      ]
+    }
+  ]
+}

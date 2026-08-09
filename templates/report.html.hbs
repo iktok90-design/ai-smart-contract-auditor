@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rugproof Audit — {{target}}</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1f262d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --border: #30363d;
+    --critical: #ff4747;
+    --high: #ff8c42;
+    --medium: #ffc94a;
+    --low: #4ac3ff;
+    --info: #8b949e;
+    --accent: #f8a849;       /* Berachain honey */
+    --accent-2: #c4843a;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+    --serif: ui-serif, Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 4rem 2rem; }
+  h1 { font-size: 2.5rem; font-weight: 800; margin: 0 0 .25rem; }
+  h1 .target { color: var(--accent); }
+  .meta {
+    color: var(--text-dim); font-family: var(--mono); font-size: .9rem;
+    margin-bottom: 3rem;
+  }
+  h2 {
+    font-size: 1.5rem; font-weight: 700; margin: 3rem 0 1rem;
+    padding-bottom: .5rem; border-bottom: 1px solid var(--border);
+  }
+  .summary {
+    background: var(--surface); padding: 1.5rem;
+    border-radius: 12px; border: 1px solid var(--border);
+    font-size: 1.05rem;
+  }
+  .grade-card {
+    display: grid; grid-template-columns: auto 1fr; gap: 2rem;
+    align-items: center; margin: 2rem 0;
+    background: var(--surface); padding: 2rem;
+    border-radius: 12px; border: 1px solid var(--border);
+  }
+  .grade-letter {
+    font-size: 6rem; font-weight: 900; line-height: 1;
+    color: var(--accent); font-family: var(--serif);
+  }
+  .severity-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: .75rem;
+  }
+  .sev-cell {
+    text-align: center; padding: 1rem; border-radius: 8px;
+    background: var(--surface-2);
+  }
+  .sev-cell .count { font-size: 1.75rem; font-weight: 800; }
+  .sev-cell .label { font-size: .75rem; text-transform: uppercase; color: var(--text-dim); }
+  .sev-critical .count { color: var(--critical); }
+  .sev-high .count { color: var(--high); }
+  .sev-medium .count { color: var(--medium); }
+  .sev-low .count { color: var(--low); }
+  .sev-info .count { color: var(--info); }
+  .finding {
+    background: var(--surface); padding: 1.5rem;
+    border-radius: 12px; border: 1px solid var(--border);
+    border-left: 4px solid var(--info);
+    margin-bottom: 1rem;
+  }
+  .finding.sev-critical { border-left-color: var(--critical); }
+  .finding.sev-high { border-left-color: var(--high); }
+  .finding.sev-medium { border-left-color: var(--medium); }
+  .finding.sev-low { border-left-color: var(--low); }
+  .finding-header {
+    display: flex; align-items: center; gap: .75rem;
+    cursor: pointer; user-select: none;
+  }
+  .finding-id {
+    font-family: var(--mono); font-size: .85rem;
+    background: var(--surface-2); padding: .25rem .5rem;
+    border-radius: 4px; color: var(--text-dim);
+  }
+  .finding-sev {
+    font-family: var(--mono); font-size: .75rem;
+    text-transform: uppercase; padding: .15rem .5rem;
+    border-radius: 4px; font-weight: 700;
+  }
+  .finding-sev.sev-critical { background: var(--critical); color: white; }
+  .finding-sev.sev-high { background: var(--high); color: white; }
+  .finding-sev.sev-medium { background: var(--medium); color: black; }
+  .finding-sev.sev-low { background: var(--low); color: black; }
+  .finding-title { flex: 1; font-weight: 600; }
+  .finding-body { padding-top: 1rem; display: none; }
+  .finding.open .finding-body { display: block; }
+  .finding-body h4 { margin: 1rem 0 .25rem; font-size: .9rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
+  pre, code {
+    font-family: var(--mono);
+    background: var(--surface-2); padding: .15rem .35rem; border-radius: 4px;
+    font-size: .9rem;
+  }
+  pre {
+    padding: 1rem; overflow-x: auto;
+    border: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  .footer {
+    margin-top: 4rem; padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim); font-size: .85rem; text-align: center;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Rugproof Audit — <span class="target">{{target}}</span></h1>
+  <div class="meta">{{date}} · commit <code>{{commit}}</code> · {{chain}}</div>
+
+  <h2>Summary</h2>
+  <div class="summary">{{executive_summary}}</div>
+
+  <div class="grade-card">
+    <div class="grade-letter">{{grade}}</div>
+    <div class="severity-grid">
+      <div class="sev-cell sev-critical"><div class="count">{{counts.critical}}</div><div class="label">Critical</div></div>
+      <div class="sev-cell sev-high"><div class="count">{{counts.high}}</div><div class="label">High</div></div>
+      <div class="sev-cell sev-medium"><div class="count">{{counts.medium}}</div><div class="label">Medium</div></div>
+      <div class="sev-cell sev-low"><div class="count">{{counts.low}}</div><div class="label">Low</div></div>
+      <div class="sev-cell sev-info"><div class="count">{{counts.info}}</div><div class="label">Info</div></div>
+    </div>
+  </div>
+
+  <h2>Trust report</h2>
+  <ul>
+    {{#each trust_report}}
+    <li><strong>{{this.function}}</strong> — {{this.description}} (Authority: {{this.authority}}; Timelock: {{this.timelock}})</li>
+    {{/each}}
+  </ul>
+
+  <h2>Findings</h2>
+  {{#each findings}}
+  <div class="finding sev-{{this.severity_lower}}" onclick="this.classList.toggle('open')">
+    <div class="finding-header">
+      <span class="finding-id">{{this.id}}</span>
+      <span class="finding-sev sev-{{this.severity_lower}}">{{this.severity}}</span>
+      <span class="finding-title">{{this.title}}</span>
+    </div>
+    <div class="finding-body">
+      <h4>Location</h4>
+      <code>{{this.path}}:{{this.line}}</code>
+      <h4>Summary</h4>
+      <p>{{this.summary}}</p>
+      <h4>Code</h4>
+      <pre><code>{{this.code}}</code></pre>
+      <h4>Impact</h4>
+      <p>{{this.impact}}</p>
+      <h4>Recommendation</h4>
+      <p>{{this.recommendation}}</p>
+      {{#if this.diff}}
+      <h4>Suggested patch</h4>
+      <pre><code>{{this.diff}}</code></pre>
+      {{/if}}
+    </div>
+  </div>
+  {{/each}}
+
+  <div class="footer">
+    Generated by <a href="https://omermaksutii.github.io/RugProof">Rugproof</a> — Rugproof your code before someone else does.
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base href="/RugProof/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rugproof — rugproof your code before someone else does</title>
+<meta name="description" content="A Claude Code plugin: smart-contract security auditor with vulnerability detection, exploit PoC generation, mainnet-fork simulation, and shareable audit cards. Solidity, Vyper, every EVM chain.">
+<meta name="theme-color" content="#0a0904">
+<meta property="og:title" content="Rugproof — Smart Contract Security Auditor">
+<meta property="og:description" content="A Claude Code plugin: vuln detection, exploit PoCs, mainnet-fork sims, shareable audit cards. Solidity, Vyper, every EVM chain.">
+<meta property="og:image" content="assets/og.png">
+<meta property="og:url" content="https://omermaksutii.github.io/RugProof">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="assets/og.png">
+<meta name="twitter:site" content="@rugproof_dev">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="bg-honeycomb"></div>
+<div class="bg-grain"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">
+      <span class="logo-mark"></span>
+      RUGPROOF
+    </a>
+    <div class="nav-links">
+      <a href="#features">features</a>
+      <a href="#stack">stack</a>
+      <a href="#install">install</a>
+      <a href="gallery/">gallery</a>
+      <a href="docs/">docs</a>
+      <a class="cta" href="https://github.com/omermaksutii/RugProof">github →</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="reveal">
+        <div class="eyebrow">v0.1.0 · open source · MIT</div>
+        <h1>
+          Rugproof<br>
+          <span class="it">your code</span><br>
+          before<br>
+          someone else does.
+        </h1>
+        <p class="lede">
+          A Claude Code plugin that turns your editor into a full-stack smart contract
+          security auditor — vulnerability detection, working exploit PoCs, mainnet-fork
+          simulation, shareable audit cards, on-chain certificates.
+        </p>
+        <div class="hero-cta-row">
+          <a class="btn btn-primary" href="#install">install <span class="arrow">→</span></a>
+          <a class="btn btn-ghost" href="https://github.com/omermaksutii/RugProof">view source</a>
+        </div>
+        <div class="hero-meta">
+          <b>v0.1.0 shipped</b> · 38 commands · 33 detection skills · 9 MCP servers · 5 demo contracts · 4/4 tests passing
+        </div>
+        <div class="hero-deco" aria-hidden="true">
+          <svg viewBox="0 0 200 200">
+            <defs>
+              <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ffc24a"/>
+                <stop offset="100%" stop-color="#c4811a"/>
+              </linearGradient>
+            </defs>
+            <path d="M100 12 L184 50 L184 130 Q184 168 100 188 Q16 168 16 130 L16 50 Z"
+                  fill="none" stroke="url(#hg)" stroke-width="2.5"/>
+            <path d="M100 12 L184 50 L184 130 Q184 168 100 188 Q16 168 16 130 L16 50 Z"
+                  fill="url(#hg)" opacity="0.12"/>
+            <text x="100" y="128" text-anchor="middle"
+                  font-family="Fraunces, serif" font-size="120" font-style="italic"
+                  fill="url(#hg)">R</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="reveal" style="transition-delay: 0.15s">
+        <div class="terminal" data-terminal>
+          <div class="terminal-bar">
+            <span class="terminal-dot r"></span>
+            <span class="terminal-dot y"></span>
+            <span class="terminal-dot g"></span>
+            <span class="terminal-title">~/MyProtocol — claude code</span>
+          </div>
+          <div class="terminal-body"><span class="cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Ethereum</span><span>Berachain</span><span>Arbitrum</span><span>Base</span><span>Optimism</span>
+    <span>Polygon</span><span>BSC</span><span>Linea</span><span>zkSync</span><span>Scroll</span>
+    <span>Solidity</span><span>Vyper</span><span>Foundry</span><span>Hardhat</span>
+    <span>Ethereum</span><span>Berachain</span><span>Arbitrum</span><span>Base</span><span>Optimism</span>
+    <span>Polygon</span><span>BSC</span><span>Linea</span><span>zkSync</span><span>Scroll</span>
+    <span>Solidity</span><span>Vyper</span><span>Foundry</span><span>Hardhat</span>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid reveal-stagger">
+      <div class="stat-cell">
+        <div class="stat-num"><span data-count="38">0</span></div>
+        <div class="stat-label">Slash commands</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><span data-count="19">0</span></div>
+        <div class="stat-label">Specialist agents</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><span data-count="33">0</span></div>
+        <div class="stat-label">Detection skills</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><span data-count="9">0</span></div>
+        <div class="stat-label">MCP servers</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num"><span data-count="10">0</span></div>
+        <div class="stat-label">EVM chains</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="block">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>What makes it<br><span class="it">unforgettable.</span></h2>
+      <p class="meta">
+        Not another linter. A full-stack auditor that produces working PoCs,
+        explains the exploit, drafts the patch, and renders a shareable card —
+        all from your editor.
+      </p>
+    </div>
+
+    <div class="features-grid reveal-stagger">
+
+      <div class="feature">
+        <div class="feature-num">/01 — exploit</div>
+        <h3>Working PoCs, <span class="it">not theory.</span></h3>
+        <p><code>/exploit &lt;finding&gt;</code> writes a Foundry test that proves the bug — and re-runs <code>forge test</code> until it passes. Every Critical comes with a smoking gun.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-num">/02 — audit-live</div>
+        <h3>Audit a <span class="it">deployed</span> contract.</h3>
+        <p>Pulls verified source from Etherscan family, optionally forks the chain via Anvil, and demonstrates the exploit against actual mainnet state. Catches false positives that theoretical audits miss.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-num">/03 — replay-incident</div>
+        <h3>Replay <span class="it">historical</span> hacks.</h3>
+        <p>Pull any tx hash, fork just before it, replay it, and walk through what the attacker did. Curve, Beanstalk, Nomad, Wormhole — pick your lesson.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-num">/04 — invariant</div>
+        <h3>Property-based <span class="it">fuzz tests.</span></h3>
+        <p>Generates Foundry invariant tests with realistic handlers. Solvency, K-monotonicity, vote-weight snapshots — proven across 5,000+ random call sequences.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-num">/05 — card</div>
+        <h3>Shareable <span class="it">audit cards.</span></h3>
+        <p>1200×1200 PNGs with grade, severity counts, and top finding. Built for tweets and PR comments. The viral hook every audit produces.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-num">/06 — slither + mythril</div>
+        <h3>Triages <span class="it">existing tools.</span></h3>
+        <p>Run Slither or Mythril, then let Rugproof separate true positives from false positives and turn symbolic counter-examples into Foundry tests that compile.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-num">/07 — mint-cert</div>
+        <h3>Soulbound <span class="it">on-chain</span> certificate.</h3>
+        <p>Optional: mint your audit grade as a soulbound NFT on Berachain. Permanent on-chain proof, signed by an EIP-712 issuer key. <code>nft/AuditCertificate.sol</code> — 3 passing tests.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-num">/08 — github action</div>
+        <h3>CI on <span class="it">every PR.</span></h3>
+        <p>Drop <code>uses: omermaksutii/RugProof-action@v1</code> into a workflow. Audits the diff, posts findings as a sticky PR comment, blocks merge on Critical.</p>
+      </div>
+
+      <div class="feature">
+        <div class="feature-num">/09 — community rules</div>
+        <h3>Bring <span class="it">your own</span> detectors.</h3>
+        <p>Pack your team's protocol-specific bug patterns as a Rugproof rule pack. Distribute via the Claude Code marketplace. <code>rules/community-pack-example/</code> shows the shape.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="stack" class="block">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>The full <span class="it">stack.</span></h2>
+      <p class="meta">
+        Real implementations, not slideware. 9 MCP servers compile clean and pass JSON-RPC
+        list+invoke smoke test. 4/4 Foundry tests passing. Pages workflow green.
+      </p>
+    </div>
+
+    <div class="features-grid reveal-stagger">
+      <div class="feature">
+        <div class="feature-num">layer 1</div>
+        <h3>Detection <span class="it">skills.</span></h3>
+        <p>33 auto-invoked patterns. Reentrancy, oracle, flash-loan, MEV, signature-replay, ERC-4337 AA, cross-chain msg, ERC-7683 intents, EigenLayer restaking, ERC-4626 inflation, plus 23 more.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">layer 2</div>
+        <h3>Specialist <span class="it">agents.</span></h3>
+        <p>19 sub-agents. Functional: <code>attacker</code>, <code>defender</code>, <code>exploit-poc-writer</code>. Protocol-specific: AMM, lending, staking, bridge, governance, vault, NFT. Hot-topic: AA, restaking, intents.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">layer 3</div>
+        <h3>MCP <span class="it">servers.</span></h3>
+        <p>9 servers in TypeScript. Block-explorer (Etherscan family), forge-runner, hardhat-runner, anvil, tenderly, c4-history, sherlock-history, gas-tracker, token-metadata.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">layer 4</div>
+        <h3>Hooks +<br><span class="it">workflows.</span></h3>
+        <p>Pre-commit quick-scan. Pre-push full audit. Pre-deploy build-artifact check. Post-test coverage analyzer. GitHub Action for PR comments. All wired in <code>plugin.json</code>.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">layer 5</div>
+        <h3>Output <span class="it">pipeline.</span></h3>
+        <p>Markdown · HTML · PDF · JSON · 1200×1200 PNG card. All rendered via templates in <code>templates/</code> — Handlebars + sharp + wkhtmltopdf. No browser binary needed.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-num">layer 6</div>
+        <h3>On-chain <span class="it">cert.</span></h3>
+        <p>Soulbound ERC-721 (<code>AuditCertificate.sol</code>). EIP-712 issuer signature, S-malleability guard, no-transfer modifier. Designed for Berachain. Local signer CLI included.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="reports" class="block">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>What it <span class="it">produces.</span></h2>
+      <p class="meta">
+        Five intentionally-vulnerable demo contracts in <code>examples/</code>. Each gets a
+        full audit report, severity breakdown, and a shareable card.
+      </p>
+    </div>
+
+    <div class="sample-grid reveal-stagger">
+      <a class="sample-card" href="docs/sample-vulnerable-vault.html">
+        <img src="assets/sample-card.png" alt="VulnerableVault — F">
+        <div class="sample-card-meta"><span class="name">VulnerableVault</span><span class="grade">F</span></div>
+      </a>
+      <a class="sample-card" href="docs/sample-spot-oracle-lending.html">
+        <img src="assets/card-spot-oracle.png" alt="SpotOracleLending — F">
+        <div class="sample-card-meta"><span class="name">SpotOracleLending</span><span class="grade">F</span></div>
+      </a>
+      <a class="sample-card" href="docs/sample-flash-loan-governance.html">
+        <img src="assets/card-flash-loan-gov.png" alt="FlashLoanGovernance — F">
+        <div class="sample-card-meta"><span class="name">FlashLoanGovernance</span><span class="grade">F</span></div>
+      </a>
+      <a class="sample-card" href="docs/sample-inflatable-4626.html">
+        <img src="assets/card-inflatable.png" alt="Inflatable4626 — F">
+        <div class="sample-card-meta"><span class="name">Inflatable4626</span><span class="grade">F</span></div>
+      </a>
+      <a class="sample-card" href="docs/sample-replayable-bridge.html">
+        <img src="assets/card-replayable-bridge.png" alt="ReplayableBridge — F">
+        <div class="sample-card-meta"><span class="name">ReplayableBridge</span><span class="grade">F</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="install" class="block">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Install in<br><span class="it">90 seconds.</span></h2>
+      <p class="meta">
+        Two flavors. Add the GitHub source as a marketplace, or — if approved — install
+        from the official Anthropic marketplace.
+      </p>
+    </div>
+
+    <div class="install-grid reveal-stagger">
+
+      <div class="install-card">
+        <h4>Option A — GitHub source</h4>
+        <div class="step">In Claude Code, run:</div>
+        <pre class="code-block"><code><span class="c"># add the marketplace</span>
+<span class="k">/plugin marketplace add</span> omermaksutii/RugProof
+
+<span class="c"># install the plugin</span>
+<span class="k">/plugin install</span> rugproof@omermaksutii-RugProof
+
+<span class="c"># 60-second onboarding</span>
+<span class="k">/rugproof-init</span></code></pre>
+      </div>
+
+      <div class="install-card">
+        <h4>Option B — official marketplace</h4>
+        <div class="step">Pending Anthropic review.</div>
+        <pre class="code-block"><code><span class="c"># once listed at claude.com/plugins:</span>
+<span class="k">/plugin install</span> rugproof
+
+<span class="c"># try it on the bundled demo</span>
+<span class="k">/audit</span> examples/VulnerableVault.sol
+
+<span class="c"># get a working PoC for the worst finding</span>
+<span class="k">/exploit</span> REENT-001</code></pre>
+      </div>
+
+      <div class="install-card">
+        <h4>Option C — GitHub Action</h4>
+        <div class="step">Audit every PR automatically.</div>
+        <pre class="code-block"><code><span class="c"># .github/workflows/audit.yml</span>
+on: <span class="s">pull_request</span>
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: <span class="s">actions/checkout@v4</span>
+      - uses: <span class="s">omermaksutii/RugProof-action@v1</span>
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          threshold: <span class="s">high</span></code></pre>
+      </div>
+
+      <div class="install-card">
+        <h4>Option D — local dev</h4>
+        <div class="step">Hack on the plugin itself.</div>
+        <pre class="code-block"><code>git clone https://github.com/omermaksutii/RugProof
+<span class="k">cd</span> RugProof
+make build           <span class="c"># MCP servers + scripts</span>
+make test            <span class="c"># forge + nft + MCP smoke</span>
+make audit-demo      <span class="c"># run the bundled exploit</span></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="display-italic">Rugproof.</div>
+        <p>Rugproof your code before someone else does. Open-source under MIT. Built for Claude Code, launching on Berachain.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#stack">Stack</a></li>
+          <li><a href="#install">Install</a></li>
+          <li><a href="gallery/">Gallery</a></li>
+          <li><a href="docs/">Docs</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="https://github.com/omermaksutii/RugProof">GitHub</a></li>
+          <li><a href="https://github.com/omermaksutii/RugProof/releases">Releases</a></li>
+          <li><a href="https://github.com/omermaksutii/RugProof/issues">Issues</a></li>
+          <li><a href="https://github.com/omermaksutii/RugProof/discussions">Discussions</a></li>
+          <li><a href="https://claude.com/plugins">Claude Marketplace</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="https://github.com/omermaksutii/RugProof/blob/main/LICENSE">License</a></li>
+          <li><a href="https://github.com/omermaksutii/RugProof/blob/main/SECURITY.md">Security</a></li>
+          <li><a href="https://github.com/omermaksutii/RugProof/blob/main/CONTRIBUTING.md">Contributing</a></li>
+          <li><a href="https://github.com/omermaksutii/RugProof/blob/main/CODE_OF_CONDUCT.md">Conduct</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 — built by @omermaksutii — MIT</span>
+      <span>v0.1.0 — released 2026-05-13</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/animations.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/iktok90-design/AuditSentry/schemas/finding.schema.json",
+  "title": "AuditSentry audit report",
+  "description": "Normalized output shape shared by /audit, parse-slither, parse-mythril, and the report renderers. Stable across v0.x.",
+  "type": "object",
+  "required": ["source", "target", "date", "counts", "grade", "findings"],
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "Producer of the report (e.g. auditsentry, slither, mythril)."
+    },
+    "target": { "type": "string", "description": "Audited path or address." },
+    "date": { "type": "string", "description": "ISO date (YYYY-MM-DD)." },
+    "counts": {
+      "type": "object",
+      "required": ["critical", "high", "medium", "low", "info"],
+      "properties": {
+        "critical": { "type": "integer", "minimum": 0 },
+        "high": { "type": "integer", "minimum": 0 },
+        "medium": { "type": "integer", "minimum": 0 },
+        "low": { "type": "integer", "minimum": 0 },
+        "info": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "grade": {
+      "type": "string",
+      "enum": ["A+", "A", "B", "C", "D", "F"],
+      "description": "Letter grade. Parsers may emit A..F; A+ reserved for clean auditsentry audits."
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["id", "severity", "title", "pattern", "path", "line"],
+      "properties": {
+        "id": { "type": "string", "description": "Stable finding id, e.g. REENT-001." },
+        "severity": { "type": "string", "enum": ["Critical", "High", "Medium", "Low", "Info"] },
+        "confidence": { "type": "string", "enum": ["HIGH", "MEDIUM", "LOW"] },
+        "title": { "type": "string" },
+        "pattern": { "type": "string", "description": "Vulnerability class / skill slug." },
+        "path": { "type": "string" },
+        "line": { "type": "integer", "minimum": 0 },
+        "summary": { "type": "string" },
+        "code": { "type": "string" },
+        "impact": { "type": "string" },
+        "likelihood": { "type": "string" },
+        "recommendation": { "type": "string" },
+        "diff": { "type": "string" },
+        "references": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    }
+  }
+}

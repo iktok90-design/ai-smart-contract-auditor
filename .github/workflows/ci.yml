@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build + test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Build MCP servers
+        working-directory: mcp
+        run: npm install && npm run build
+
+      - name: Build scripts
+        working-directory: scripts
+        run: npm install && npm run build
+
+      - name: Version sync check
+        run: node scripts/check-versions.mjs
+
+      - name: Fetch Solidity deps
+        run: bash scripts/ci-fetch-deps.sh
+
+      - name: Forge build
+        run: forge build --sizes
+
+      - name: Foundry tests (exploit PoCs)
+        run: forge test -vv
+
+      - name: NFT certificate tests
+        run: FOUNDRY_PROFILE=nft forge test -vv
+
+      - name: Script unit tests
+        working-directory: scripts
+        run: npm run test:only
+
+      - name: MCP server tests (offline)
+        working-directory: mcp
+        run: npm run test:only
+
+      - name: MCP smoke test
+        run: node scripts/dist/test-mcp.js
+
+      - name: E2E report pipeline
+        run: bash scripts/test/e2e-report.sh
+
+      - name: Generated docs are in sync
+        run: |
+          node scripts/generate-docs.mjs
+          git diff --exit-code docs/docs/commands.html docs/docs/skills.html \
+            docs/docs/agents.html docs/docs/mcp-reference.html \
+            || { echo "::error::reference docs are stale — run 'make docs' and commit"; exit 1; }
+
+      - name: Validate bundled rule packs
+        run: |
+          for p in rules/*/; do
+            [ -f "$p/pack.yml" ] && node scripts/validate-rule-pack.mjs "$p" || true
+          done
+          for p in rules/*/; do
+            if [ -f "$p/pack.yml" ]; then node scripts/validate-rule-pack.mjs "$p" || exit 1; fi
+          done
+
+      - name: Benchmark harness self-check
+        run: node scripts/dist/benchmark.js --expected bench/expected.json >/dev/null
+
+      - name: Gallery is in sync
+        run: |
+          node scripts/generate-gallery.mjs
+          git diff --exit-code docs/gallery/index.html \
+            || { echo "::error::gallery is stale — run 'make gallery' and commit"; exit 1; }
+
+  live-analyzers:
+    name: Live static-analyzer runners
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # External tools (slither/mythril) can be flaky to install; this job provides
+    # signal but never blocks the merge.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"   # mythril/slither build cleanly here (3.12 drops distutils)
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+      - name: Fetch Solidity deps
+        run: bash scripts/ci-fetch-deps.sh
+      - name: Install Slither (gating) + Mythril (best-effort)
+        run: |
+          pip install slither-analyzer
+          pip install mythril || echo "::warning::mythril install failed (non-fatal)"
+      - name: Build MCP servers + scripts
+        run: |
+          (cd mcp && npm install && npm run build)
+          (cd scripts && npm install && npm run build)
+      - name: slither-runner responds (real binary)
+        run: node scripts/dist/test-mcp.js slither-runner
+      - name: Slither → parse-slither end-to-end on a demo contract
+        run: |
+          slither examples/VulnerableVault.sol --json - > /tmp/sl.json 2>/dev/null || true
+          if [ -s /tmp/sl.json ]; then
+            node scripts/dist/parse-slither.js --in /tmp/sl.json --out /tmp/findings.json
+            node -e 'const f=require("/tmp/findings.json"); if(!Array.isArray(f.findings)) throw new Error("bad parse"); console.log("slither→auditsentry:", f.findings.length, "findings, grade", f.grade)'
+          else
+            echo "::warning::slither emitted no JSON for the demo contract (non-fatal)"
+          fi
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: forge fmt check
+        run: forge fmt --check
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

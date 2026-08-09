@@ -1,0 +1,71 @@
+name: AuditSentry Action
+description: Run AuditSentry security audit and post findings to your PR.
+author: AuditSentry
+
+branding:
+  icon: shield
+  color: orange
+
+inputs:
+  command:
+    description: "Slash command to run (default: /audit-changes main)"
+    required: false
+    default: "/audit-changes main"
+  threshold:
+    description: "Block CI on this severity or above (critical|high|medium|low|info)"
+    required: false
+    default: "high"
+  comment:
+    description: "Post results as a sticky PR comment"
+    required: false
+    default: "true"
+  upload-findings:
+    description: "Upload findings JSON as a workflow artifact"
+    required: false
+    default: "true"
+  anthropic-api-key:
+    description: "Anthropic API key (from secrets)"
+    required: true
+
+outputs:
+  blocking:
+    description: "Number of findings at or above threshold"
+    value: ${{ steps.run.outputs.blocking }}
+  grade:
+    description: "Letter grade returned by /score"
+    value: ${{ steps.run.outputs.grade }}
+  findings-path:
+    description: "Path to findings.json"
+    value: ${{ steps.run.outputs.findings_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Run AuditSentry
+      id: run
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+      run: |
+        set -e
+        npx -y @anthropic-ai/claude-code \
+          code -p "${{ inputs.command }}" \
+          --output-format json > auditsentry-findings.json || true
+        BLOCKING=$(node -e '
+          const f=require("./auditsentry-findings.json");
+          const m={info:0,low:1,medium:2,high:3,critical:4};
+          const th=m["${{ inputs.threshold }}"]||3;
+          console.log((f.findings||[]).filter(x=>m[(x.severity||"info").toLowerCase()]>=th).length);
+        ')
+        GRADE=$(node -e 'const f=require("./auditsentry-findings.json"); console.log(f.grade||"?");')
+        echo "blocking=$BLOCKING" >> "$GITHUB_OUTPUT"
+        echo "grade=$GRADE" >> "$GITHUB_OUTPUT"
+        echo "findings_path=auditsentry-findings.json" >> "$GITHUB_OUTPUT"
+
+    - name: Upload findings
+      if: inputs.upload-findings == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: auditsentry-findings
+        path: auditsentry-findings.json
+        retention-days: 30
