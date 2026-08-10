@@ -124,3 +124,27 @@ pub recipient: UncheckedAccount<'info>,
 
 - [[access-control]] — signer, owner, and has_one constraints are Solana's entire auth model
 - [[signature-replay]] — Solana txs need recent-blockhash + nonce discipline; instruction-level replay across PDAs
+
+## PDA Validation & Account Constraints
+
+Added program-derived address (PDA) validation for Anchor programs. The skill now detects:
+
+- **Missing `seeds` constraint** on PDA accounts initialized via CPI
+- **Mismatched bump seeds** between `init` and subsequent `mut` constraints
+- **Unchecked account discriminators** in cross-program invocations
+- **Missing `has_one` constraints** on associated token accounts
+
+### Detection Example
+
+```rust
+// VULNERABLE: Missing seeds constraint on PDA init
+#[derive(Accounts)]
+pub struct InitializePool {
+    #[account(init, payer = admin, space = 8 + Pool::SIZE)]
+    pub pool: Account<'info, Pool>,  // ❌ Missing PDA seed derivation
+    pub admin: Signer<'info>,
+}
+```
+
+The skill verifies Anchor IDL account constraints against actual on-chain validation
+and flags mismatches that could allow fake PDA injection attacks.
