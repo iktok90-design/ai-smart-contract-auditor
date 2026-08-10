@@ -51,6 +51,32 @@ AuditSentry deploys **23 specialized AI agents** in parallel, each attacking a d
 
 ---
 
+## 📋 Prerequisites
+
+Before installing AuditSentry, make sure you have the following tools:
+
+| Tool | Version | Purpose |
+|---|---|---|
+| [Node.js](https://nodejs.org) | **>= 18** (LTS) | Run MCP servers and scripts (npm included) |
+| [Foundry](https://book.getfoundry.sh/getting-started/installation) | **>= 0.3.0** | Solidity compilation, testing, and fork simulation |
+| [Git](https://git-scm.com) | Any recent | Clone the repository |
+| `make` | Built-in | Run the build pipeline (`make build`) |
+
+> **macOS users:** `make` is pre-installed via Xcode Command Line Tools (`xcode-select --install`).
+> **Linux users:** `make` is usually pre-installed or available via your package manager (`sudo apt install make`).
+
+**Verify your installation:**
+
+```bash
+node -v      # should show v18.x or higher
+npm -v       # should show v9.x or higher
+forge --version
+git --version
+make --version
+```
+
+---
+
 ## 🚀 Quick Install
 
 ```bash
