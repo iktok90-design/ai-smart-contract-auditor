@@ -89,7 +89,7 @@ render-card: build-scripts ## Render an arbitrary card. Usage: make render-card 
 	node scripts/dist/render-card.js --findings "$(IN)" --out "$(OUT)"
 
 telemetry:
-	@node scripts/beacon.mjs
+	@node scripts/beacon.cjs
 
 clean: ## Remove build outputs
 	rm -rf out out-nft cache mcp/*/dist scripts/dist
